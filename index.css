@@ -8,3 +8,15 @@
     display: grid;
     grid-template: repeat(16, 50px) / repeat(30, 50px);
 }
+
+.bomb {
+    background-color: red;
+}
+
+.hidden {
+    background-color: greenyellow;
+}
+
+.reveal {
+    background-color: lightblue;
+}

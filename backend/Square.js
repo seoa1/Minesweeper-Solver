@@ -6,6 +6,8 @@ export default class Square {
         this._bomb = false;
         this._flagged = false;
         this._id = id;
+        this._pos = [this._id / 100 | 0, this._id % 100 | 0];
+        this._revealed = false;
     }
 
     set flagged(flagged) {
@@ -18,6 +20,18 @@ export default class Square {
 
     set surr_bombs(surr_bombs) {
         this._surr_bombs = surr_bombs;
+    }
+
+    set revealed(revealed) {
+        this._revealed = revealed;
+    }
+
+    get revealed() {
+        return this._revealed;
+    }
+
+    get pos() {
+        return this._pos;
     }
 
     get bomb() {

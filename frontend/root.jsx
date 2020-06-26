@@ -1,9 +1,10 @@
 import React from 'react';
-import MinesweeperBoard from './minesweeper_board';
+import MinesweeperBoard from './react_board';
+import Game from './game';
 
 const Root = () => (
     <div>
-        <MinesweeperBoard/>
+        <Game/>
     </div>
 )
 
