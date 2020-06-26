@@ -12,12 +12,14 @@ export default class Game extends React.Component {
         this.update_game = this.update_game.bind(this);
     }
 
-    update_game(square) {
+    update_game(square, flagged) {
         if(!this.state.started) {
-            this.setState({started: true});
             this.state.board.set_bombs(square.pos);
+            this.setState({started: true});
         }
-        this.state.board.reveal_squares(square.pos);
+        if(!flagged && !square.flagged){
+            this.state.board.reveal_squares(square.pos);
+        }
         this.setState({ board: this.state.board });
     }
 

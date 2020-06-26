@@ -18,7 +18,7 @@ export default class Board {
     reveal_squares(pos) {
         const DIRS_8 = [[0,1],[1,1],[1,0],[0,-1],[-1,1],[1,-1],[-1,0],[-1,-1]];
         let curr_square = this.grid[pos[0]][pos[1]];
-        if(curr_square.surr_bombs > 0 || curr_square.revealed) {
+        if(curr_square.surr_bombs > 0 || curr_square.revealed || curr_square.bomb) {
             curr_square.revealed = true;
             return;
         }
@@ -28,20 +28,6 @@ export default class Board {
         });
 
     }
-
-    set_bombs() {
-        for(let i=0; i<99; i++) {
-            let row = Math.random() * 16 | 0;
-            let col = Math.random() * 30 | 0;
-            if(this.grid[row][col].bomb) {
-                i--;
-            }
-            else {
-                this.grid[row][col].bomb = true;
-            }
-        }
-    }
-
     // no bomb allowed at pos
     set_bombs(pos) {
         for(let i=0; i<99; i++) {

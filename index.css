@@ -1,12 +1,21 @@
+body {
+    font-size: 100%;
+}
+
 .tile {
-    width: 50px;
-    height: 50px;
-    border: 2px solid;
+    border: 1px solid white;
+    width: 3vw;
+    height: 3vw;
+    text-align: center;
+    line-height: 3vw;
+    font-size: 2em;
 }
 
 .grid {
     display: grid;
-    grid-template: repeat(16, 50px) / repeat(30, 50px);
+    width: 90%;
+    height: 48vw;
+    grid-template: repeat(16, 1fr) / repeat(30, 1fr);
 }
 
 .bomb {
@@ -19,4 +28,8 @@
 
 .reveal {
     background-color: lightblue;
+}
+
+.flag {
+    background-color: black;
 }
