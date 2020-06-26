@@ -3,13 +3,14 @@ import Square from './square';
 export default class Board {
     constructor() {
         this.grid = [];
+        this.build_grid();
     }
 
     build_grid() {
         for(let i=0; i<16; i++) {
             this.grid.push([]);
             for(let j=0; j<30; j++) {
-                this.grid[i].push(new Square());
+                this.grid[i].push(new Square(i*100 + j));
             }
         }
     }
@@ -39,6 +40,7 @@ export default class Board {
                 this.grid[row][col].bomb = true;
             }
         }
+        this.find_surr_bomb_vals();
     }
 
     find_surr_bomb_vals() {
@@ -63,7 +65,7 @@ export default class Board {
             let new_row = pos[0] + dir[0];
             let new_col = pos[1] + dir[1];
             if(new_row >= 0 && new_row < 16 && new_col >= 0 && new_col < 30) {
-                squares.push(this.grid[new_row, new_col]);
+                squares.push(this.grid[new_row][new_col]);
             }
         })
         return squares;

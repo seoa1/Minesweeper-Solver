@@ -1,10 +1,11 @@
 
 
 export default class Square {
-    constructor() {
+    constructor(id) {
         this._surr_bombs = 0;
         this._bomb = false;
         this._flagged = false;
+        this._id = id;
     }
 
     set flagged(flagged) {
@@ -21,6 +22,10 @@ export default class Square {
 
     get bomb() {
         return this._bomb;
+    }
+
+    get id() {
+        return this._id;
     }
 
     get surr_bombs() {
