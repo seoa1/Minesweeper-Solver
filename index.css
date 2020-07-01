@@ -1,21 +1,24 @@
 body {
     font-size: 100%;
+    
 }
 
 .tile {
     border: 1px solid white;
-    width: 3vw;
-    height: 3vw;
+    width: 2.5vw;
+    height: 2.5vw;
     text-align: center;
-    line-height: 3vw;
-    font-size: 2em;
+    line-height: 2.5vw;
+    font-size: 2vw;
+    box-sizing: border-box;
 }
 
 .grid {
     display: grid;
-    width: 90%;
-    height: 48vw;
+    width: 75vw;
+    height: 40vw;
     grid-template: repeat(16, 1fr) / repeat(30, 1fr);
+    margin: 0 auto;
 }
 
 .bomb {
@@ -32,4 +35,19 @@ body {
 
 .flag {
     background-color: black;
+}
+
+.header {
+    display: flex;
+    height: 3vw;
+    justify-content: space-evenly;
+    width: 75vw;
+    background-color: beige;
+    margin: 0 auto;
+}
+
+.header div {
+    text-align: center;
+    line-height: 3vw;
+    font-size: 1.5vw;
 }

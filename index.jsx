@@ -7,6 +7,3 @@ document.addEventListener("DOMContentLoaded", () => {
     ReactDOM.render(<Root/>, main);
 })
 
-document.addEventListener("contextmenu", () => {
-    event.preventDefault();
-})
