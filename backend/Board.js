@@ -4,6 +4,9 @@ export default class Board {
     constructor() {
         this.grid = [];
         this.build_grid();
+        this._lost = false;
+        this.num_unopened_squares = 480;
+        this._won = (this.num_unopened_squares <= 99);
     }
 
     build_grid() {
@@ -19,6 +22,9 @@ export default class Board {
         let curr_square = this.grid[pos[0]][pos[1]];
         if(curr_square.surr_bombs > 0 || curr_square.revealed || curr_square.bomb) {
             curr_square.revealed = true;
+            if(curr_square.bomb == true) {
+                this._lost = true;
+            }
             return;
         }
         this.surr_squares(pos).forEach((square) => {
@@ -68,5 +74,13 @@ export default class Board {
             }
         })
         return squares;
+    }
+
+    get lost() {
+        return this._lost;
+    }
+
+    get won() {
+        return this._won;
     }
 }

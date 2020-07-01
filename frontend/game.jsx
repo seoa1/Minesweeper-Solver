@@ -2,17 +2,22 @@ import React from 'react';
 import Board from '../backend/board';
 import ReactBoard from './react_board';
 import Header from './header';
+import GameOver from './gameover';
 
 export default class Game extends React.Component {
     constructor() {
         super();
         this.started = false;
         this.num_flags = 99;
+        this.won = false;
         this.state = {
             time: 0,
             board: new Board(),
+            show: false
         }
         this.update_game = this.update_game.bind(this);
+        this.restart_game = this.restart_game.bind(this);
+        this.show_game_over = this.show_game_over.bind(this);
     }
 
     start_timer() {
@@ -20,6 +25,12 @@ export default class Game extends React.Component {
     }
     componentWillUnmount() {
         clearInterval(this.interval);
+    }
+
+    restart_game() {
+        this.num_flags = 99;
+        this.started = false;
+        this.setState({ time: 0, board: new Board(), show: false });
     }
 
     update_game(square, flagged) {
@@ -30,6 +41,12 @@ export default class Game extends React.Component {
         }
         if(!flagged && !square.flagged){
             this.state.board.reveal_squares(square.pos);
+            if(this.state.board.lost) {
+                this.show_game_over(false);
+            }
+            else if(this.state.board.won) {
+                this.show_game_over(true);
+            }
         }
         else if(flagged && !square.flagged) {
             this.num_flags++;
@@ -40,9 +57,16 @@ export default class Game extends React.Component {
         this.setState({ board: this.state.board });
     }
 
+    show_game_over(winner) {
+        clearInterval(this.interval);
+        this.won = winner;
+        this.setState({ show: true });
+    }
+
     render() {
         return (
             <div>
+                <GameOver restart={this.restart_game} won={this.won} show={this.state.show} time={this.state.time}/>
                 <Header time={this.state.time} num_flags={this.num_flags}/>
                 <ReactBoard bd={this.state.board} upd={this.update_game}/>  
             </div>
