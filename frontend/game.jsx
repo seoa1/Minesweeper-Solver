@@ -18,6 +18,8 @@ export default class Game extends React.Component {
         this.update_game = this.update_game.bind(this);
         this.restart_game = this.restart_game.bind(this);
         this.show_game_over = this.show_game_over.bind(this);
+        this.solve = this.solve.bind(this);
+        this.take_step = this.take_step.bind(this);
     }
 
     start_timer() {
@@ -31,6 +33,29 @@ export default class Game extends React.Component {
         this.num_flags = 99;
         this.started = false;
         this.setState({ time: 0, board: new Board(), show: false });
+    }
+
+    solve() {
+        if(!this.started) {
+            let rand_pos = [Math.random() * 16 | 0, Math.random() * 30 | 0];
+            this.state.board.set_bombs(rand_pos);
+            this.started = true;
+            this.state.board.reveal_squares(rand_pos);
+            this.setState({ board: this.state.board});
+        }
+        else {
+            clearInterval(this.interval);
+        }        
+        this.solve_interval = setInterval(this.take_step, 0);
+    }
+
+    take_step() {
+        let cont = this.state.board.check_edges();
+        this.setState({ board: this.state.board, time: 999 });
+        console.log(this.state.board.get_num_edges());
+        if(!cont) {
+            clearInterval(this.solve_interval);
+        }
     }
 
     update_game(square, flagged) {
@@ -67,7 +92,7 @@ export default class Game extends React.Component {
         return (
             <div>
                 <GameOver restart={this.restart_game} won={this.won} show={this.state.show} time={this.state.time}/>
-                <Header time={this.state.time} num_flags={this.num_flags}/>
+                <Header time={this.state.time} num_flags={this.num_flags} solve={this.solve}/>
                 <ReactBoard bd={this.state.board} upd={this.update_game}/>  
             </div>
         )

@@ -10,6 +10,10 @@ export default class Board {
         this.edge_squares = new Map(); // keys are ids, values are Squares
     }
 
+    get_num_edges() {
+        return this.edge_squares.size;
+    }
+
     build_grid() {
         for(let i=0; i<16; i++) {
             this.grid.push([]);
@@ -19,29 +23,54 @@ export default class Board {
         }
     }
 
-    solve_edges() {
-        let solvable = true;
-        while(solvable) {
-            
+    check_edges() {
+        let to_delete = [];
+        let to_reveal = [];
+        this.edge_squares.forEach( (edge_square, key) => {
+            let unrev_squares = [];
+            let num_surr_flags = 0;
+            this.surr_squares(edge_square.pos).forEach( surr_square => {
+                if(!surr_square.revealed && !surr_square.flagged) {
+                    unrev_squares.push(surr_square);
+                }
+                if(surr_square.flagged) {
+                    num_surr_flags++;
+                }
+            })
+            // check if any obvious square clears
+            if(num_surr_flags == edge_square.surr_bombs) {
+                unrev_squares.forEach( unrev => {
+                    to_reveal.push(unrev);
+                })
+            }
+            // check if any obvious bomb flags
+            if(unrev_squares.length == edge_square.surr_bombs - num_surr_flags) {
+                unrev_squares.forEach( unrev => {
+                    unrev.flagged = true;
+                })
+                to_delete.push(edge_square);
+            }
+        })
+        if(to_reveal.length == 0 && to_delete.length == 0 ) {
+            return false;
         }
+        to_reveal.forEach( rev_sq => this.reveal_squares(rev_sq.pos) );
+        to_delete.forEach( del_sq => this.edge_squares.delete(del_sq.id) );
+        return true;
     }
 
     reveal_squares(pos) {
         let curr_square = this.grid[pos[0]][pos[1]];
-        if(this.edge_squares.has(curr_square.id)) {
-            this.edge_squares.delete(curr_square.id);
-        }
+
         if(curr_square.surr_bombs > 0 || curr_square.revealed || curr_square.bomb) {
+            if(curr_square.surr_bombs > 0 && !curr_square.revealed) {
+                this.edge_squares.set(curr_square.id, curr_square);
+            }
             curr_square.revealed = true;
             if(curr_square.bomb == true) {
                 this._lost = true;
-                return;
             }
-            this.surr_squares(pos).forEach((square) => {
-                if(!square.revealed && !square.flagged) {
-                    this.edge_squares.set(square.id, square);
-                }
-            })
+            
             return;
         }
         this.surr_squares(pos).forEach((square) => {
