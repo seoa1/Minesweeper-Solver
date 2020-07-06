@@ -15,6 +15,7 @@ export default class Game extends React.Component {
             board: new Board(),
             show: false
         }
+        this.check = false;
         this.update_game = this.update_game.bind(this);
         this.restart_game = this.restart_game.bind(this);
         this.show_game_over = this.show_game_over.bind(this);
@@ -39,24 +40,35 @@ export default class Game extends React.Component {
     solve() {
         const REVEAL_INTERVAL = 0;
         if(!this.started) {
+            // regular execution
             let rand_pos = [Math.random() * 16 | 0, Math.random() * 30 | 0];
             this.state.board.set_bombs(rand_pos);
-            this.started = true;
             this.state.board.reveal_squares(rand_pos);
+
+            //test suite
+            // let test_start = [0,0];
+            // this.state.board.set_bombs_test_grid();
+            // this.state.board.reveal_squares(test_start);
+
+            this.started = true;
+            
             this.setState({ board: this.state.board});
         }
         else {
             clearInterval(this.interval);
-        }    
+        }
+        //this.take_step();    
         this.solve_interval = setInterval(this.take_step, REVEAL_INTERVAL);
     }
 
     take_step() {
         let cont = this.state.board.check_edges();
         this.setState({ board: this.state.board, time: 999 });
-        console.log("running");
         if(!cont) {
-            clearInterval(this.solve_interval);
+            if(this.check) {
+                clearInterval(this.solve_interval);
+            }
+            this.check = true;
         }
     }
 
