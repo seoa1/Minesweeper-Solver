@@ -36,6 +36,7 @@ export default class Game extends React.Component {
     }
 
     solve() {
+        const REVEAL_INTERVAL = 0;
         if(!this.started) {
             let rand_pos = [Math.random() * 16 | 0, Math.random() * 30 | 0];
             this.state.board.set_bombs(rand_pos);
@@ -46,13 +47,12 @@ export default class Game extends React.Component {
         else {
             clearInterval(this.interval);
         }        
-        this.solve_interval = setInterval(this.take_step, 0);
+        this.solve_interval = setInterval(this.take_step, REVEAL_INTERVAL);
     }
 
     take_step() {
         let cont = this.state.board.check_edges();
         this.setState({ board: this.state.board, time: 999 });
-        console.log(this.state.board.get_num_edges());
         if(!cont) {
             clearInterval(this.solve_interval);
         }
