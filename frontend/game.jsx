@@ -47,7 +47,7 @@ export default class Game extends React.Component {
         }
         else {
             clearInterval(this.interval);
-        }        
+        }    
         this.solve_interval = setInterval(this.take_step, REVEAL_INTERVAL);
     }
 
