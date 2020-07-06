@@ -27,6 +27,7 @@ export default class Game extends React.Component {
     }
     componentWillUnmount() {
         clearInterval(this.interval);
+        clearInterval(this.solve_interval);
     }
 
     restart_game() {
@@ -53,6 +54,7 @@ export default class Game extends React.Component {
     take_step() {
         let cont = this.state.board.check_edges();
         this.setState({ board: this.state.board, time: 999 });
+        console.log("running");
         if(!cont) {
             clearInterval(this.solve_interval);
         }

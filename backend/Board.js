@@ -115,24 +115,28 @@ export default class Board {
                             }
                         }
                         //1/1 pattern
-                        // else if(this.sq_at_pos(new_pos).surr_bombs - new_num_surr_flags == 1) {
-                        //     let back_1_up_1 = [sq_pos[0] + 1, sq_pos[1] - dir[1]];
-                        //     let back_1_down_1 = [sq_pos[0] - 1, sq_pos[1] - dir[1]];
-                        //     // check up direction
-                        //     if(!this.is_valid_pos(back_1_up_1) || this.sq_at_pos(back_1_up_1).revealed) {
-                        //         let forward_2_up_1 = [sq_pos[0] + 1, sq_pos[1] + (dir[1] * 2)];
-                        //         if(this.is_valid_pos(forward_2_up_1) && !this.sq_at_pos(forward_2_up_1).flagged) {
-                        //             to_reveal.push(this.sq_at_pos(forward_2_up_1));
-                        //         }
-                        //     }
-                        //     // check down direction
-                        //     if(!this.is_valid_pos(back_1_down_1) || this.sq_at_pos(back_1_down_1).revealed) {
-                        //         let forward_2_down_1 = [sq_pos[0] - 1, sq_pos[1] + (dir[1] * 2)];
-                        //         if(this.is_valid_pos(forward_2_down_1) && !this.sq_at_pos(forward_2_down_1).flagged) {
-                        //             to_reveal.push(this.sq_at_pos(forward_2_down_1));
-                        //         }
-                        //     }
-                        // }
+                        else if(this.sq_at_pos(new_pos).surr_bombs - new_num_surr_flags == 1) {
+                            let back_1_up_1 = [sq_pos[0] + 1, sq_pos[1] - dir[1]];
+                            let back_1_down_1 = [sq_pos[0] - 1, sq_pos[1] - dir[1]];
+                            let back_1 = [sq_pos[0], sq_pos[1] - dir[1]];
+                            let forward_2 = [sq_pos[0], sq_pos[1] + (dir[1] * 2)];
+                            let check_forw_back = (!this.is_valid_pos(back_1) || this.sq_at_pos(back_1).revealed) && (!this.is_valid_pos(forward_2) || this.sq_at_pos(forward_2).revealed);
+
+                            // check up direction
+                            if(check_forw_back && (!this.is_valid_pos(back_1_up_1) || this.sq_at_pos(back_1_up_1).revealed)) {
+                                let forward_2_up_1 = [sq_pos[0] + 1, sq_pos[1] + (dir[1] * 2)];
+                                if(this.is_valid_pos(forward_2_up_1) && !this.sq_at_pos(forward_2_up_1).flagged && !this.sq_at_pos(forward_2_up_1).revealed) {
+                                    to_reveal.push(this.sq_at_pos(forward_2_up_1));
+                                }
+                            }
+                            // check down direction
+                            if(check_forw_back && (!this.is_valid_pos(back_1_down_1) || this.sq_at_pos(back_1_down_1).revealed)) {
+                                let forward_2_down_1 = [sq_pos[0] - 1, sq_pos[1] + (dir[1] * 2)];
+                                if(this.is_valid_pos(forward_2_down_1) && !this.sq_at_pos(forward_2_down_1).flagged && !this.sq_at_pos(forward_2_down_1).revealed) {
+                                    to_reveal.push(this.sq_at_pos(forward_2_down_1));
+                                }
+                            }
+                        }
                     }
                 });
                 DIRS_ROW.forEach( dir => {
@@ -148,7 +152,7 @@ export default class Board {
                         // 2/1 pattern
                         if(this.sq_at_pos(new_pos).surr_bombs - new_num_surr_flags == 2) {
                             let forward_2 = [sq_pos[0] + (dir[0] * 2), sq_pos[1]];
-                            if(this.is_valid_pos(forward_2) && this.sq_at_pos(forward_2).revealed) {
+                            if(this.is_valid_pos(forward_2) && (this.sq_at_pos(forward_2).revealed || this.sq_at_pos(forward_2).flagged)) {
                                 let forward_2_up_1 = [sq_pos[0] + (dir[0] * 2), sq_pos[1] + 1];
                                 let forward_2_down_1 = [sq_pos[0] + (dir[0] * 2), sq_pos[1] - 1];
                                 if(this.is_valid_pos(forward_2_up_1) && this.sq_at_pos(forward_2_up_1).revealed) {
@@ -175,24 +179,28 @@ export default class Board {
                             }
                         }
                         //1/1 pattern
-                        // else if(this.sq_at_pos(new_pos).surr_bombs - new_num_surr_flags == 1) {
-                        //     let back_1_up_1 = [sq_pos[0] + 1, sq_pos[1] - dir[1]];
-                        //     let back_1_down_1 = [sq_pos[0] - 1, sq_pos[1] - dir[1]];
-                        //     // check up direction
-                        //     if(!this.is_valid_pos(back_1_up_1) || this.sq_at_pos(back_1_up_1).revealed) {
-                        //         let forward_2_up_1 = [sq_pos[0] + 1, sq_pos[1] + (dir[1] * 2)];
-                        //         if(this.is_valid_pos(forward_2_up_1)) {
-                        //             to_reveal.push(this.sq_at_pos(forward_2_up_1));
-                        //         }
-                        //     }
-                        //     // check down direction
-                        //     else if(!this.is_valid_pos(back_1_down_1) || this.sq_at_pos(back_1_down_1).revealed) {
-                        //         let forward_2_down_1 = [sq_pos[0] - 1, sq_pos[1] + (dir[1] * 2)];
-                        //         if(this.is_valid_pos(forward_2_down_1)) {
-                        //             to_reveal.push(this.sq_at_pos(forward_2_down_1));
-                        //         }
-                        //     }
-                        // }
+                        else if(this.sq_at_pos(new_pos).surr_bombs - new_num_surr_flags == 1) {
+                            let back_1_up_1 = [sq_pos[0] - dir[0], sq_pos[1] + 1];
+                            let back_1_down_1 = [sq_pos[0] - dir[0], sq_pos[1] - 1];
+                            let back_1 = [sq_pos[0] - dir[0], sq_pos[1]];
+                            let forward_2 = [sq_pos[0] + (dir[0] * 2), sq_pos[1]];
+                            let check_forw_back = (!this.is_valid_pos(back_1) || this.sq_at_pos(back_1).revealed) && (!this.is_valid_pos(forward_2) || this.sq_at_pos(forward_2).revealed);
+
+                            // check up direction
+                            if(check_forw_back && (!this.is_valid_pos(back_1_up_1) || this.sq_at_pos(back_1_up_1).revealed)) {
+                                let forward_2_up_1 = [sq_pos[0] + (dir[0] * 2), sq_pos[1] + 1];
+                                if(this.is_valid_pos(forward_2_up_1) && !this.sq_at_pos(forward_2_up_1).flagged && !this.sq_at_pos(forward_2_up_1).revealed) {
+                                    to_reveal.push(this.sq_at_pos(forward_2_up_1));
+                                }
+                            }
+                            // check down direction
+                            if(check_forw_back && (!this.is_valid_pos(back_1_down_1) || this.sq_at_pos(back_1_down_1).revealed)) {
+                                let forward_2_down_1 = [sq_pos[0] + (dir[0] * 2), sq_pos[1] - 1];
+                                if(this.is_valid_pos(forward_2_down_1) && !this.sq_at_pos(forward_2_down_1).flagged && !this.sq_at_pos(forward_2_down_1).revealed) {
+                                    to_reveal.push(this.sq_at_pos(forward_2_down_1));
+                                }
+                            }
+                        }
                     }
                 });
             }
@@ -200,7 +208,11 @@ export default class Board {
         if(to_reveal.length == 0 && to_delete.length == 0 ) {
             return false;
         }
-        to_reveal.forEach( rev_sq => this.reveal_squares(rev_sq.pos) );
+        to_reveal.forEach( rev_sq => {
+            if(!rev_sq.flagged) {
+                this.reveal_squares(rev_sq.pos) 
+            }
+        });
         to_delete.forEach( del_sq => this.edge_squares.delete(del_sq.id) );
         return true;
     }
