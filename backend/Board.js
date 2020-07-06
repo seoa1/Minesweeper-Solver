@@ -134,7 +134,7 @@ export default class Board {
             && (!this.is_valid_pos(forward_2) || this.sq_at_pos(forward_2).revealed);
 
         // check up direction
-        if(check_forw_back && (!this.is_valid_pos(back_1_up_1) || this.sq_at_pos(back_1_up_1).revealed)) {
+        if(check_forw_back && (!this.is_valid_pos(back_1_up_1) || this.sq_at_pos(back_1_up_1).revealed || this.sq_at_pos(back_1_up_1).flagged)) {
             let below = [back_1_down_1, down_1, forward_1_down_1, forward_2_down_1];
             let check = true;
             below.forEach(pos => {
@@ -149,7 +149,7 @@ export default class Board {
             
         }
         // check down direction
-        if(check_forw_back && (!this.is_valid_pos(back_1_down_1) || this.sq_at_pos(back_1_down_1).revealed)) {
+        if(check_forw_back && (!this.is_valid_pos(back_1_down_1) || this.sq_at_pos(back_1_down_1).revealed || this.sq_at_pos(back_1_down_1).flagged)) {
             let above = [back_1_up_1, up_1, forward_1_up_1, forward_2_up_1];
             let check = true;
             above.forEach(pos => {
@@ -200,7 +200,6 @@ export default class Board {
             }
             // check for 2/1 and 1/1 pattern
             // http://www.minesweeper.info/wiki/Strategy
-            // TODO: refactor into separate functions
             if(edge_square.surr_bombs - num_surr_flags == 1) {
                 const DIRS = [[0,1],[0,-1],[1,0],[-1,0]];
                 let sq_pos = edge_square.pos;
