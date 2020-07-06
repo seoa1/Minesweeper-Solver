@@ -115,6 +115,8 @@ var Board = /*#__PURE__*/function () {
     this.num_unopened_squares = 480;
     this._won = this.num_unopened_squares <= 99;
     this.edge_squares = new Map(); // keys are ids, values are Squares
+
+    this.flags = 0;
   }
 
   _createClass(Board, [{
@@ -144,8 +146,15 @@ var Board = /*#__PURE__*/function () {
       return this.grid[pos[0]][pos[1]];
     }
   }, {
-    key: "check_for_11",
-    value: function check_for_11(square) {}
+    key: "add_flag",
+    value: function add_flag() {
+      this.flags++;
+    }
+  }, {
+    key: "remove_flat",
+    value: function remove_flat() {
+      this.flags--;
+    }
   }, {
     key: "two_one_pattern",
     value: function two_one_pattern(sq_pos, dir) {
@@ -171,12 +180,14 @@ var Board = /*#__PURE__*/function () {
         if (this.is_valid_pos(forward_2_up_1) && this.sq_at_pos(forward_2_up_1).revealed) {
           if (this.is_valid_pos(forward_2_down_1) && !this.sq_at_pos(forward_2_down_1).flagged) {
             this.sq_at_pos(forward_2_down_1).flagged = true;
+            this.flags++;
           }
         }
 
         if (this.is_valid_pos(forward_2_down_1) && this.sq_at_pos(forward_2_down_1).revealed) {
           if (this.is_valid_pos(forward_2_up_1) && !this.sq_at_pos(forward_2_up_1).flagged) {
             this.sq_at_pos(forward_2_up_1).flagged = true;
+            this.flags++;
           }
         }
 
@@ -245,7 +256,7 @@ var Board = /*#__PURE__*/function () {
 
       var check_forw_back = (!this.is_valid_pos(back_1) || this.sq_at_pos(back_1).revealed) && (!this.is_valid_pos(forward_2) || this.sq_at_pos(forward_2).revealed); // check up direction
 
-      if (check_forw_back && (!this.is_valid_pos(back_1_up_1) || this.sq_at_pos(back_1_up_1).revealed)) {
+      if (check_forw_back && (!this.is_valid_pos(back_1_up_1) || this.sq_at_pos(back_1_up_1).revealed || this.sq_at_pos(back_1_up_1).flagged)) {
         var below = [back_1_down_1, down_1, forward_1_down_1, forward_2_down_1];
         var check = true;
         below.forEach(function (pos) {
@@ -260,7 +271,7 @@ var Board = /*#__PURE__*/function () {
       } // check down direction
 
 
-      if (check_forw_back && (!this.is_valid_pos(back_1_down_1) || this.sq_at_pos(back_1_down_1).revealed)) {
+      if (check_forw_back && (!this.is_valid_pos(back_1_down_1) || this.sq_at_pos(back_1_down_1).revealed || this.sq_at_pos(back_1_down_1).flagged)) {
         var above = [back_1_up_1, up_1, forward_1_up_1, forward_2_up_1];
         var _check = true;
         above.forEach(function (pos) {
@@ -313,11 +324,11 @@ var Board = /*#__PURE__*/function () {
         if (unrev_squares.length == edge_square.surr_bombs - num_surr_flags) {
           unrev_squares.forEach(function (unrev) {
             unrev.flagged = true;
+            _this3.flags++;
           });
           to_delete.push(key);
         } // check for 2/1 and 1/1 pattern
         // http://www.minesweeper.info/wiki/Strategy
-        // TODO: refactor into separate functions
 
 
         if (edge_square.surr_bombs - num_surr_flags == 1) {
@@ -373,6 +384,7 @@ var Board = /*#__PURE__*/function () {
           this.edge_squares.set(curr_square.id, curr_square);
         }
 
+        this.num_unopened_squares--;
         curr_square.revealed = true;
 
         if (curr_square.bomb == true) {
@@ -383,6 +395,7 @@ var Board = /*#__PURE__*/function () {
       }
 
       this.surr_squares(pos).forEach(function (square) {
+        _this4.num_unopened_squares--;
         curr_square.revealed = true;
 
         _this4.reveal_squares(square.pos);

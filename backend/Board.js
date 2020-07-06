@@ -8,6 +8,7 @@ export default class Board {
         this.num_unopened_squares = 480;
         this._won = (this.num_unopened_squares <= 99);
         this.edge_squares = new Map(); // keys are ids, values are Squares
+        this.flags = 0;
     }
 
     get_num_edges() {
@@ -31,8 +32,12 @@ export default class Board {
         return this.grid[pos[0]][pos[1]];
     }
 
-    check_for_11(square) {
+    add_flag() {
+        this.flags++;
+    }
 
+    remove_flat() {
+        this.flags--;
     }
 
     two_one_pattern(sq_pos, dir) {
@@ -56,11 +61,13 @@ export default class Board {
             if(this.is_valid_pos(forward_2_up_1) && (this.sq_at_pos(forward_2_up_1).revealed)) {
                 if(this.is_valid_pos(forward_2_down_1) && !this.sq_at_pos(forward_2_down_1).flagged) {
                     this.sq_at_pos(forward_2_down_1).flagged = true;
+                    this.flags++;
                 }
             }
             if(this.is_valid_pos(forward_2_down_1) && (this.sq_at_pos(forward_2_down_1).revealed)) {
                 if(this.is_valid_pos(forward_2_up_1) && !this.sq_at_pos(forward_2_up_1).flagged) {
                     this.sq_at_pos(forward_2_up_1).flagged = true;
+                    this.flags++;
                 }
             }
             let check = (!this.is_valid_pos(forward_2_up_1) || this.sq_at_pos(forward_2_up_1).revealed || this.sq_at_pos(forward_2_up_1).flagged) 
@@ -195,6 +202,7 @@ export default class Board {
             if(unrev_squares.length == edge_square.surr_bombs - num_surr_flags) {
                 unrev_squares.forEach( unrev => {
                     unrev.flagged = true;
+                    this.flags++;
                 })
                 to_delete.push(key);
             }
@@ -247,6 +255,7 @@ export default class Board {
             if(curr_square.surr_bombs > 0 && !curr_square.revealed) {
                 this.edge_squares.set(curr_square.id, curr_square);
             }
+            this.num_unopened_squares--;
             curr_square.revealed = true;
             if(curr_square.bomb == true) {
                 this._lost = true;
@@ -255,6 +264,7 @@ export default class Board {
             return;
         }
         this.surr_squares(pos).forEach((square) => {
+            this.num_unopened_squares--;
             curr_square.revealed = true;
             this.reveal_squares(square.pos);
         });
