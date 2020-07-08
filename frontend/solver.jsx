@@ -3,9 +3,9 @@ import React from 'react';
 const Solver = ({ solve }) => {
 
     return (
-        <button onClick={solve}>
+        <div className="button" onClick={solve}>
             SOLVE!
-        </button>
+        </div>
     )
     
 }

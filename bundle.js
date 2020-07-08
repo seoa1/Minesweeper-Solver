@@ -113,13 +113,18 @@ var Board = /*#__PURE__*/function () {
     this.build_grid();
     this._lost = false;
     this.num_unopened_squares = 480;
-    this._won = this.num_unopened_squares <= 99;
     this.edge_squares = new Map(); // keys are ids, values are Squares
 
     this.flags = 0;
+    this.standard_prob = 21;
   }
 
   _createClass(Board, [{
+    key: "num_flags",
+    value: function num_flags() {
+      return this.flags;
+    }
+  }, {
     key: "get_num_edges",
     value: function get_num_edges() {
       return this.edge_squares.size;
@@ -151,8 +156,8 @@ var Board = /*#__PURE__*/function () {
       this.flags++;
     }
   }, {
-    key: "remove_flat",
-    value: function remove_flat() {
+    key: "remove_flag",
+    value: function remove_flag() {
       this.flags--;
     }
   }, {
@@ -254,13 +259,13 @@ var Board = /*#__PURE__*/function () {
         forward_1_down_1 = [sq_pos[0] + dir[0], sq_pos[1] - 1];
       }
 
-      var check_forw_back = (!this.is_valid_pos(back_1) || this.sq_at_pos(back_1).revealed) && (!this.is_valid_pos(forward_2) || this.sq_at_pos(forward_2).revealed); // check up direction
+      var check_forw_back = (!this.is_valid_pos(back_1) || this.sq_at_pos(back_1).revealed || this.sq_at_pos(back_1).flagged) && (!this.is_valid_pos(forward_2) || this.sq_at_pos(forward_2).revealed || this.sq_at_pos(forward_2).flagged); // check up direction
 
       if (check_forw_back && (!this.is_valid_pos(back_1_up_1) || this.sq_at_pos(back_1_up_1).revealed || this.sq_at_pos(back_1_up_1).flagged)) {
         var below = [back_1_down_1, down_1, forward_1_down_1, forward_2_down_1];
         var check = true;
         below.forEach(function (pos) {
-          if (!(!_this2.is_valid_pos(pos) || _this2.sq_at_pos(pos).revealed)) {
+          if (!(!_this2.is_valid_pos(pos) || _this2.sq_at_pos(pos).revealed || _this2.sq_at_pos(pos).flagged)) {
             check = false;
           }
         });
@@ -275,7 +280,7 @@ var Board = /*#__PURE__*/function () {
         var above = [back_1_up_1, up_1, forward_1_up_1, forward_2_up_1];
         var _check = true;
         above.forEach(function (pos) {
-          if (!(!_this2.is_valid_pos(pos) || _this2.sq_at_pos(pos).revealed)) {
+          if (!(!_this2.is_valid_pos(pos) || _this2.sq_at_pos(pos).revealed || _this2.sq_at_pos(pos).flagged)) {
             _check = false;
           }
         });
@@ -288,17 +293,31 @@ var Board = /*#__PURE__*/function () {
       return to_reveal;
     }
   }, {
+    key: "set_standard_probs",
+    value: function set_standard_probs() {
+      var _this3 = this;
+
+      this.standard_prob = Math.round(100 * (99 - this.flags) / this.num_unopened_squares);
+      this.grid.flat(1).forEach(function (sq) {
+        if (!sq.revealed && !sq.flagged) {
+          sq.bomb_prob = _this3.standard_prob;
+        }
+      });
+    }
+  }, {
     key: "check_edges",
     value: function check_edges() {
-      var _this3 = this;
+      var _this4 = this;
 
       var to_delete = [];
       var to_reveal = [];
+      var lowest_sq;
+      var lowest_prob = 100;
       this.edge_squares.forEach(function (edge_square, key) {
         var unrev_squares = [];
         var num_surr_flags = 0;
 
-        _this3.surr_squares(edge_square.pos).forEach(function (surr_square) {
+        _this4.surr_squares(edge_square.pos).forEach(function (surr_square) {
           if (!surr_square.revealed && !surr_square.flagged) {
             unrev_squares.push(surr_square);
           }
@@ -310,6 +329,19 @@ var Board = /*#__PURE__*/function () {
 
         if (unrev_squares.length == 0) {
           to_delete.push(key);
+        } else {
+          //set bomb probabilities
+          var bomb_prob = Math.round(100 * (edge_square.surr_bombs - num_surr_flags) / unrev_squares.length);
+          unrev_squares.forEach(function (sq) {
+            if (bomb_prob > sq.bomb_prob || sq.bomb_prob == _this4.standard_prob) {
+              sq.bomb_prob = bomb_prob;
+            }
+
+            if (sq.bomb_prob < lowest_prob) {
+              lowest_prob = sq.bomb_prob;
+              lowest_sq = sq;
+            }
+          });
         } // check if any obvious square clears
 
 
@@ -324,7 +356,7 @@ var Board = /*#__PURE__*/function () {
         if (unrev_squares.length == edge_square.surr_bombs - num_surr_flags) {
           unrev_squares.forEach(function (unrev) {
             unrev.flagged = true;
-            _this3.flags++;
+            _this4.flags++;
           });
           to_delete.push(key);
         } // check for 2/1 and 1/1 pattern
@@ -337,21 +369,21 @@ var Board = /*#__PURE__*/function () {
           DIRS.forEach(function (dir) {
             var new_pos = [sq_pos[0] + dir[0], sq_pos[1] + dir[1]];
 
-            if (_this3.is_valid_pos(new_pos) && _this3.sq_at_pos(new_pos).revealed) {
+            if (_this4.is_valid_pos(new_pos) && _this4.sq_at_pos(new_pos).revealed) {
               var new_num_surr_flags = 0;
 
-              _this3.surr_squares(new_pos).forEach(function (sq) {
+              _this4.surr_squares(new_pos).forEach(function (sq) {
                 if (sq.flagged) {
                   new_num_surr_flags++;
                 }
               }); // 2/1 pattern
 
 
-              if (_this3.sq_at_pos(new_pos).surr_bombs - new_num_surr_flags == 2) {
-                to_reveal = to_reveal.concat(_this3.two_one_pattern(sq_pos, dir));
+              if (_this4.sq_at_pos(new_pos).surr_bombs - new_num_surr_flags == 2) {
+                to_reveal = to_reveal.concat(_this4.two_one_pattern(sq_pos, dir));
               } //1/1 pattern
-              else if (_this3.sq_at_pos(new_pos).surr_bombs - new_num_surr_flags == 1) {
-                  to_reveal = to_reveal.concat(_this3.one_one_pattern(sq_pos, dir));
+              else if (_this4.sq_at_pos(new_pos).surr_bombs - new_num_surr_flags == 1) {
+                  to_reveal = to_reveal.concat(_this4.one_one_pattern(sq_pos, dir));
                 }
             }
           });
@@ -359,23 +391,33 @@ var Board = /*#__PURE__*/function () {
       });
 
       if (to_reveal.length == 0 && to_delete.length == 0) {
-        return false;
+        if (lowest_sq != null) {
+          to_reveal.push(lowest_sq);
+        } // any stray islands
+        else {
+            this.grid.flat(1).forEach(function (sq) {
+              if (!sq.revealed && !sq.flagged) {
+                to_reveal.push(sq);
+              }
+            });
+            return 100;
+          }
       }
 
       to_reveal.forEach(function (rev_sq) {
         if (!rev_sq.flagged) {
-          _this3.reveal_squares(rev_sq.pos);
+          _this4.reveal_squares(rev_sq.pos);
         }
       });
       to_delete.forEach(function (key) {
-        return _this3.edge_squares["delete"](key);
+        return _this4.edge_squares["delete"](key);
       });
-      return true;
+      return lowest_prob;
     }
   }, {
     key: "reveal_squares",
     value: function reveal_squares(pos) {
-      var _this4 = this;
+      var _this5 = this;
 
       var curr_square = this.grid[pos[0]][pos[1]];
 
@@ -384,7 +426,10 @@ var Board = /*#__PURE__*/function () {
           this.edge_squares.set(curr_square.id, curr_square);
         }
 
-        this.num_unopened_squares--;
+        if (!curr_square.revealed) {
+          this.num_unopened_squares--;
+        }
+
         curr_square.revealed = true;
 
         if (curr_square.bomb == true) {
@@ -395,10 +440,13 @@ var Board = /*#__PURE__*/function () {
       }
 
       this.surr_squares(pos).forEach(function (square) {
-        _this4.num_unopened_squares--;
+        if (!curr_square.revealed) {
+          _this5.num_unopened_squares--;
+        }
+
         curr_square.revealed = true;
 
-        _this4.reveal_squares(square.pos);
+        _this5.reveal_squares(square.pos);
       });
     }
   }, {
@@ -416,23 +464,23 @@ var Board = /*#__PURE__*/function () {
   }, {
     key: "set_bombs",
     value: function set_bombs(pos) {
-      var _this5 = this;
+      var _this6 = this;
 
       var _loop = function _loop(_i) {
         var row = Math.random() * 16 | 0;
         var col = Math.random() * 30 | 0;
         var surr = false;
 
-        _this5.surr_squares_pos_only(pos).forEach(function (surr_pos) {
+        _this6.surr_squares_pos_only(pos).forEach(function (surr_pos) {
           if (row == surr_pos[0] && col == surr_pos[1]) {
             surr = true;
           }
         });
 
-        if (_this5.grid[row][col].bomb || row == pos[0] && col == pos[1] || surr) {
+        if (_this6.grid[row][col].bomb || row == pos[0] && col == pos[1] || surr) {
           _i--;
         } else {
-          _this5.grid[row][col].bomb = true;
+          _this6.grid[row][col].bomb = true;
         }
 
         i = _i;
@@ -447,7 +495,7 @@ var Board = /*#__PURE__*/function () {
   }, {
     key: "find_surr_bomb_vals",
     value: function find_surr_bomb_vals() {
-      var _this6 = this;
+      var _this7 = this;
 
       var DIRS_8 = [[0, 1], [1, 1], [1, 0], [0, -1], [-1, 1], [1, -1], [-1, 0], [-1, -1]];
 
@@ -455,13 +503,13 @@ var Board = /*#__PURE__*/function () {
         var _loop2 = function _loop2(j) {
           var num_surr_bombs = 0;
 
-          _this6.surr_squares([_i2, j]).forEach(function (square) {
+          _this7.surr_squares([_i2, j]).forEach(function (square) {
             if (square.bomb) {
               num_surr_bombs++;
             }
           });
 
-          _this6.grid[_i2][j].surr_bombs = num_surr_bombs;
+          _this7.grid[_i2][j].surr_bombs = num_surr_bombs;
         };
 
         for (var j = 0; j < 30; j++) {
@@ -473,7 +521,7 @@ var Board = /*#__PURE__*/function () {
   }, {
     key: "surr_squares",
     value: function surr_squares(pos) {
-      var _this7 = this;
+      var _this8 = this;
 
       var DIRS = [[0, 1], [1, 1], [1, 0], [0, -1], [-1, 1], [1, -1], [-1, 0], [-1, -1]];
       var squares = [];
@@ -482,7 +530,7 @@ var Board = /*#__PURE__*/function () {
         var new_col = pos[1] + dir[1];
 
         if (new_row >= 0 && new_row < 16 && new_col >= 0 && new_col < 30) {
-          squares.push(_this7.grid[new_row][new_col]);
+          squares.push(_this8.grid[new_row][new_col]);
         }
       });
       return squares;
@@ -511,7 +559,7 @@ var Board = /*#__PURE__*/function () {
   }, {
     key: "won",
     get: function get() {
-      return this._won;
+      return this.num_unopened_squares <= 99;
     }
   }]);
 
@@ -548,9 +596,18 @@ var Square = /*#__PURE__*/function () {
     this._id = id;
     this._pos = [this._id / 100 | 0, this._id % 100 | 0];
     this._revealed = false;
+    this._bomb_prob = 21;
   }
 
   _createClass(Square, [{
+    key: "bomb_prob",
+    set: function set(bomb_prob) {
+      this._bomb_prob = bomb_prob;
+    },
+    get: function get() {
+      return this._bomb_prob;
+    }
+  }, {
     key: "flagged",
     set: function set(flagged) {
       this._flagged = flagged;
@@ -681,19 +738,18 @@ var Game = /*#__PURE__*/function (_React$Component) {
 
     _this = _super.call(this);
     _this.started = false;
-    _this.num_flags = 99;
-    _this.won = false;
     _this.state = {
       time: 0,
       board: new _backend_board__WEBPACK_IMPORTED_MODULE_1__["default"](),
-      show: false
+      show_modal: false,
+      cheated: false
     };
-    _this.check = false;
     _this.update_game = _this.update_game.bind(_assertThisInitialized(_this));
     _this.restart_game = _this.restart_game.bind(_assertThisInitialized(_this));
     _this.show_game_over = _this.show_game_over.bind(_assertThisInitialized(_this));
     _this.solve = _this.solve.bind(_assertThisInitialized(_this));
     _this.take_step = _this.take_step.bind(_assertThisInitialized(_this));
+    _this.loss_odds = 0;
     return _this;
   }
 
@@ -717,18 +773,21 @@ var Game = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "restart_game",
     value: function restart_game() {
-      this.num_flags = 99;
       this.started = false;
       this.setState({
+        cheated: false,
         time: 0,
         board: new _backend_board__WEBPACK_IMPORTED_MODULE_1__["default"](),
-        show: false
+        show_modal: false
       });
     }
   }, {
     key: "solve",
     value: function solve() {
-      var REVEAL_INTERVAL = 0;
+      this.setState({
+        cheated: true
+      });
+      var REVEAL_INTERVAL = 100;
 
       if (!this.started) {
         // regular execution
@@ -753,18 +812,24 @@ var Game = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "take_step",
     value: function take_step() {
+      this.state.board.set_standard_probs();
       var cont = this.state.board.check_edges();
+
+      if (this.state.board.lost) {
+        this.show_game_over();
+        this.loss_odds = cont;
+        clearInterval(this.solve_interval);
+      } else if (this.state.board.won) {
+        this.show_game_over();
+      }
+
       this.setState({
         board: this.state.board,
         time: 999
       });
 
-      if (!cont) {
-        if (this.check) {
-          clearInterval(this.solve_interval);
-        }
-
-        this.check = true;
+      if (cont == 100) {
+        clearInterval(this.solve_interval);
       }
     }
   }, {
@@ -780,14 +845,14 @@ var Game = /*#__PURE__*/function (_React$Component) {
         this.state.board.reveal_squares(square.pos);
 
         if (this.state.board.lost) {
-          this.show_game_over(false);
+          this.show_game_over();
         } else if (this.state.board.won) {
-          this.show_game_over(true);
+          this.show_game_over();
         }
       } else if (flagged && !square.flagged) {
-        this.num_flags++;
+        this.state.board.remove_flag();
       } else if (flagged && !square.revealed) {
-        this.num_flags--;
+        this.state.board.add_flag();
       }
 
       this.setState({
@@ -796,11 +861,10 @@ var Game = /*#__PURE__*/function (_React$Component) {
     }
   }, {
     key: "show_game_over",
-    value: function show_game_over(winner) {
+    value: function show_game_over() {
       clearInterval(this.interval);
-      this.won = winner;
       this.setState({
-        show: true
+        show_modal: true
       });
     }
   }, {
@@ -808,16 +872,20 @@ var Game = /*#__PURE__*/function (_React$Component) {
     value: function render() {
       return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_gameover__WEBPACK_IMPORTED_MODULE_4__["default"], {
         restart: this.restart_game,
-        won: this.won,
-        show: this.state.show,
-        time: this.state.time
+        won: this.state.board.won,
+        lost: this.state.board.lost,
+        show: this.state.show_modal,
+        time: this.state.time,
+        loss_odds: this.loss_odds,
+        cheated: this.state.cheated
       }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_header__WEBPACK_IMPORTED_MODULE_3__["default"], {
         time: this.state.time,
-        num_flags: this.num_flags,
+        num_flags: 99 - this.state.board.num_flags(),
         solve: this.solve
       }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_react_board__WEBPACK_IMPORTED_MODULE_2__["default"], {
         bd: this.state.board,
-        upd: this.update_game
+        upd: this.update_game,
+        cheated: this.state.cheated
       }));
     }
   }]);
@@ -915,16 +983,24 @@ var GameOver = /*#__PURE__*/function (_React$Component) {
       }
 
       var message = "";
+      var color;
 
-      if (this.props.won) {
-        message = "You won! Congratulations!";
+      if (this.props.won && !this.props.lost) {
+        message = "YOU WON! Congratulations!\nYour time: ".concat(this.props.time, "\nPlay Again?");
+        color = "congrats";
       } else {
-        message = "You lost! Better luck next time!";
+        if (this.props.cheated) {
+          message = "The solver hit a bomb! Unlucky!\nYour odds of losing on that square: ".concat(this.props.loss_odds, " %\nPlay Again?");
+        } else {
+          message = "You lost! Better luck next time!\nYour time: ".concat(this.props.time, "\nPlay Again?");
+        }
+
+        color = "loser";
       }
 
       return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        className: "gameover"
-      }, "".concat(message, "\nYour time: ").concat(this.props.time, "\nPlay Again?"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: "gameover " + color
+      }, message, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         className: this.state.color_class,
         onClick: this.try_again,
         onMouseEnter: this.go_green,
@@ -995,14 +1071,16 @@ __webpack_require__.r(__webpack_exports__);
 
 var ReactBoard = function ReactBoard(_ref) {
   var bd = _ref.bd,
-      upd = _ref.upd;
+      upd = _ref.upd,
+      cheated = _ref.cheated;
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
     className: "grid"
   }, bd.grid.flat(1).map(function (square) {
     return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_tile__WEBPACK_IMPORTED_MODULE_1__["default"], {
       sq: square,
       key: square.id,
-      upd: upd
+      upd: upd,
+      cheated: cheated
     });
   })));
 };
@@ -1022,14 +1100,12 @@ var ReactBoard = function ReactBoard(_ref) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _react_board__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./react_board */ "./frontend/react_board.jsx");
-/* harmony import */ var _game__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./game */ "./frontend/game.jsx");
-
+/* harmony import */ var _game__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./game */ "./frontend/game.jsx");
 
 
 
 var Root = function Root() {
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_game__WEBPACK_IMPORTED_MODULE_2__["default"], null));
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_game__WEBPACK_IMPORTED_MODULE_1__["default"], null));
 };
 
 /* harmony default export */ __webpack_exports__["default"] = (Root);
@@ -1051,7 +1127,8 @@ __webpack_require__.r(__webpack_exports__);
 
 var Solver = function Solver(_ref) {
   var solve = _ref.solve;
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+    className: "button",
     onClick: solve
   }, "SOLVE!");
 };
@@ -1072,7 +1149,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Tile; });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _backend_square__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../backend/square */ "./backend/square.js");
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -1097,7 +1173,6 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 
 
 
-
 var Tile = /*#__PURE__*/function (_React$Component) {
   _inherits(Tile, _React$Component);
 
@@ -1111,6 +1186,7 @@ var Tile = /*#__PURE__*/function (_React$Component) {
     _this = _super.call(this, props);
     _this.handle_click = _this.handle_click.bind(_assertThisInitialized(_this));
     _this.flag = _this.flag.bind(_assertThisInitialized(_this));
+    _this.prob_color = _this.prob_color.bind(_assertThisInitialized(_this));
     return _this;
   }
 
@@ -1133,6 +1209,29 @@ var Tile = /*#__PURE__*/function (_React$Component) {
       this.props.upd(this.props.sq, true);
     }
   }, {
+    key: "prob_color",
+    value: function prob_color() {
+      var sq_bomb_prob = this.props.sq.bomb_prob;
+
+      if (sq_bomb_prob == 100) {
+        return "guarantee";
+      } else if (sq_bomb_prob >= 80) {
+        return "high";
+      } else if (sq_bomb_prob >= 60) {
+        return "midhigh";
+      } else if (sq_bomb_prob >= 40) {
+        return "mid";
+      } else if (sq_bomb_prob >= 30) {
+        return "middishlow";
+      } else if (sq_bomb_prob >= 20) {
+        return "midlow";
+      } else if (sq_bomb_prob > 0) {
+        return "low";
+      }
+
+      return "zero";
+    }
+  }, {
     key: "render",
     value: function render() {
       var status;
@@ -1153,7 +1252,12 @@ var Tile = /*#__PURE__*/function (_React$Component) {
         if (square.flagged) {
           status = "flag";
         } else {
-          status = "hidden";
+          if (this.props.cheated) {
+            text = this.props.sq.bomb_prob.toString();
+            status = "cheater " + this.prob_color();
+          } else {
+            status = "hidden";
+          }
         }
       }
 

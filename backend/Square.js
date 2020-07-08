@@ -8,6 +8,11 @@ export default class Square {
         this._id = id;
         this._pos = [this._id / 100 | 0, this._id % 100 | 0];
         this._revealed = false;
+        this._bomb_prob = 21;
+    }
+
+    set bomb_prob(bomb_prob) {
+        this._bomb_prob = bomb_prob;
     }
 
     set flagged(flagged) {
@@ -48,5 +53,9 @@ export default class Square {
 
     get flagged() {
         return this._flagged;
+    }
+
+    get bomb_prob() {
+        return this._bomb_prob;
     }
 }

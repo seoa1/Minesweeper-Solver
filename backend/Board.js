@@ -6,9 +6,13 @@ export default class Board {
         this.build_grid();
         this._lost = false;
         this.num_unopened_squares = 480;
-        this._won = (this.num_unopened_squares <= 99);
         this.edge_squares = new Map(); // keys are ids, values are Squares
         this.flags = 0;
+        this.standard_prob = 21;
+    }
+
+    num_flags() {
+        return this.flags;
     }
 
     get_num_edges() {
@@ -36,7 +40,7 @@ export default class Board {
         this.flags++;
     }
 
-    remove_flat() {
+    remove_flag() {
         this.flags--;
     }
 
@@ -57,7 +61,6 @@ export default class Board {
             forward_2_down_1 = [sq_pos[0] + (dir[0] * 2), sq_pos[1] - 1];
         }
         if(this.is_valid_pos(forward_2) && (this.sq_at_pos(forward_2).revealed || this.sq_at_pos(forward_2).flagged)) {
-            
             if(this.is_valid_pos(forward_2_up_1) && (this.sq_at_pos(forward_2_up_1).revealed)) {
                 if(this.is_valid_pos(forward_2_down_1) && !this.sq_at_pos(forward_2_down_1).flagged) {
                     this.sq_at_pos(forward_2_down_1).flagged = true;
@@ -137,15 +140,15 @@ export default class Board {
             forward_1_down_1 = [sq_pos[0] + dir[0], sq_pos[1] - 1];
         }
 
-        let check_forw_back = (!this.is_valid_pos(back_1) || this.sq_at_pos(back_1).revealed) 
-            && (!this.is_valid_pos(forward_2) || this.sq_at_pos(forward_2).revealed);
+        let check_forw_back = (!this.is_valid_pos(back_1) || this.sq_at_pos(back_1).revealed || this.sq_at_pos(back_1).flagged) 
+            && (!this.is_valid_pos(forward_2) || this.sq_at_pos(forward_2).revealed || this.sq_at_pos(forward_2).flagged);
 
         // check up direction
         if(check_forw_back && (!this.is_valid_pos(back_1_up_1) || this.sq_at_pos(back_1_up_1).revealed || this.sq_at_pos(back_1_up_1).flagged)) {
             let below = [back_1_down_1, down_1, forward_1_down_1, forward_2_down_1];
             let check = true;
             below.forEach(pos => {
-                if(!(!this.is_valid_pos(pos) || this.sq_at_pos(pos).revealed)) {
+                if(!(!this.is_valid_pos(pos) || this.sq_at_pos(pos).revealed || this.sq_at_pos(pos).flagged)) {
                     check = false;
                 }
             })
@@ -160,7 +163,7 @@ export default class Board {
             let above = [back_1_up_1, up_1, forward_1_up_1, forward_2_up_1];
             let check = true;
             above.forEach(pos => {
-                if(!(!this.is_valid_pos(pos) || this.sq_at_pos(pos).revealed)) {
+                if(!(!this.is_valid_pos(pos) || this.sq_at_pos(pos).revealed || this.sq_at_pos(pos).flagged)) {
                     check = false;
                 }
             })
@@ -172,9 +175,20 @@ export default class Board {
         return to_reveal;
     }
 
+    set_standard_probs() {
+        this.standard_prob = Math.round(100 * (99 - this.flags) / this.num_unopened_squares)
+        this.grid.flat(1).forEach( sq => {
+            if(!sq.revealed && !sq.flagged) {
+                sq.bomb_prob = this.standard_prob;
+            }
+        })
+    }
+
     check_edges() {
         let to_delete = [];
         let to_reveal = [];
+        let lowest_sq;
+        let lowest_prob = 100;
         this.edge_squares.forEach( (edge_square, key) => {
             let unrev_squares = [];
             let num_surr_flags = 0;
@@ -186,9 +200,22 @@ export default class Board {
                     num_surr_flags++;
                 }
             })
-
+            
             if(unrev_squares.length == 0) {
                 to_delete.push(key);
+            }
+            else {
+                //set bomb probabilities
+                let bomb_prob = Math.round(100 * (edge_square.surr_bombs - num_surr_flags) / unrev_squares.length);
+                unrev_squares.forEach( sq => {
+                    if(bomb_prob > sq.bomb_prob || sq.bomb_prob == this.standard_prob) {
+                        sq.bomb_prob = bomb_prob;
+                    }
+                    if(sq.bomb_prob < lowest_prob) {
+                        lowest_prob = sq.bomb_prob;
+                        lowest_sq = sq;
+                    }
+                })
             }
             
             // check if any obvious square clears
@@ -237,7 +264,19 @@ export default class Board {
             }
         })
         if(to_reveal.length == 0 && to_delete.length == 0 ) {
-            return false;
+            if(lowest_sq != null) {
+                to_reveal.push(lowest_sq);
+            }
+            // any stray islands
+            else {
+                this.grid.flat(1).forEach( sq => {
+                    if(!sq.revealed && !sq.flagged) {
+                        to_reveal.push(sq);
+                    }
+                })
+                return 100;
+            }
+
         }
         to_reveal.forEach( rev_sq => {
             if(!rev_sq.flagged) {
@@ -245,7 +284,7 @@ export default class Board {
             }
         });
         to_delete.forEach( key => this.edge_squares.delete(key) );
-        return true;
+        return lowest_prob;
     }
 
     reveal_squares(pos) {
@@ -255,7 +294,10 @@ export default class Board {
             if(curr_square.surr_bombs > 0 && !curr_square.revealed) {
                 this.edge_squares.set(curr_square.id, curr_square);
             }
-            this.num_unopened_squares--;
+            if(!curr_square.revealed) {
+                this.num_unopened_squares--;
+
+            }
             curr_square.revealed = true;
             if(curr_square.bomb == true) {
                 this._lost = true;
@@ -264,7 +306,9 @@ export default class Board {
             return;
         }
         this.surr_squares(pos).forEach((square) => {
-            this.num_unopened_squares--;
+            if(!curr_square.revealed) {
+                this.num_unopened_squares--;
+            }
             curr_square.revealed = true;
             this.reveal_squares(square.pos);
         });
@@ -346,6 +390,6 @@ export default class Board {
     }
 
     get won() {
-        return this._won;
+        return this.num_unopened_squares <= 99;
     }
 }

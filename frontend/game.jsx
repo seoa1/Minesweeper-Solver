@@ -8,19 +8,18 @@ export default class Game extends React.Component {
     constructor() {
         super();
         this.started = false;
-        this.num_flags = 99;
-        this.won = false;
         this.state = {
             time: 0,
             board: new Board(),
-            show: false
+            show_modal: false,
+            cheated: false
         }
-        this.check = false;
         this.update_game = this.update_game.bind(this);
         this.restart_game = this.restart_game.bind(this);
         this.show_game_over = this.show_game_over.bind(this);
         this.solve = this.solve.bind(this);
         this.take_step = this.take_step.bind(this);
+        this.loss_odds = 0;
     }
 
     start_timer() {
@@ -32,13 +31,13 @@ export default class Game extends React.Component {
     }
 
     restart_game() {
-        this.num_flags = 99;
         this.started = false;
-        this.setState({ time: 0, board: new Board(), show: false });
+        this.setState({ cheated: false, time: 0, board: new Board(), show_modal: false });
     }
 
     solve() {
-        const REVEAL_INTERVAL = 0;
+        this.setState({ cheated: true });
+        const REVEAL_INTERVAL = 100;
         if(!this.started) {
             // regular execution
             let rand_pos = [Math.random() * 16 | 0, Math.random() * 30 | 0];
@@ -62,13 +61,19 @@ export default class Game extends React.Component {
     }
 
     take_step() {
+        this.state.board.set_standard_probs();
         let cont = this.state.board.check_edges();
+        if(this.state.board.lost) {
+            this.show_game_over();
+            this.loss_odds = cont;
+            clearInterval(this.solve_interval);
+        }
+        else if(this.state.board.won) {
+            this.show_game_over();
+        }
         this.setState({ board: this.state.board, time: 999 });
-        if(!cont) {
-            if(this.check) {
-                clearInterval(this.solve_interval);
-            }
-            this.check = true;
+        if(cont == 100) {
+            clearInterval(this.solve_interval);
         }
     }
 
@@ -81,33 +86,38 @@ export default class Game extends React.Component {
         if(!flagged && !square.flagged){
             this.state.board.reveal_squares(square.pos);
             if(this.state.board.lost) {
-                this.show_game_over(false);
+                this.show_game_over();
             }
             else if(this.state.board.won) {
-                this.show_game_over(true);
+                this.show_game_over();
             }
         }
         else if(flagged && !square.flagged) {
-            this.num_flags++;
+            this.state.board.remove_flag();
         }
         else if(flagged && !square.revealed) {
-            this.num_flags--;
+            this.state.board.add_flag();
         }
         this.setState({ board: this.state.board });
     }
 
-    show_game_over(winner) {
+    show_game_over() {
         clearInterval(this.interval);
-        this.won = winner;
-        this.setState({ show: true });
+        this.setState({ show_modal: true });
     }
 
     render() {
         return (
             <div>
-                <GameOver restart={this.restart_game} won={this.won} show={this.state.show} time={this.state.time}/>
-                <Header time={this.state.time} num_flags={this.num_flags} solve={this.solve}/>
-                <ReactBoard bd={this.state.board} upd={this.update_game}/>  
+                <GameOver restart={this.restart_game} 
+                    won={this.state.board.won} 
+                    lost={this.state.board.lost}
+                    show={this.state.show_modal} 
+                    time={this.state.time} 
+                    loss_odds={this.loss_odds}
+                    cheated={this.state.cheated}/>
+                <Header time={this.state.time} num_flags={99 - this.state.board.num_flags()} solve={this.solve}/>
+                <ReactBoard bd={this.state.board} upd={this.update_game} cheated={this.state.cheated}/>  
             </div>
         )
     }

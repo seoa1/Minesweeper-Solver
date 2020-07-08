@@ -29,15 +29,23 @@ export default class GameOver extends React.Component {
             return null;
         }
         let message = "";
-        if(this.props.won) {
-            message = "You won! Congratulations!";
+        let color;
+        if(this.props.won && !this.props.lost) {
+            message = `YOU WON! Congratulations!\nYour time: ${this.props.time}\nPlay Again?`;
+            color = "congrats";
         }
         else {
-            message = "You lost! Better luck next time!";
+            if(this.props.cheated) {
+                message = `The solver hit a bomb! Unlucky!\nYour odds of losing on that square: ${this.props.loss_odds} %\nPlay Again?`;
+            }
+            else{
+                message = `You lost! Better luck next time!\nYour time: ${this.props.time}\nPlay Again?`;
+            }
+            color = "loser";
         }
         return (
-            <div className="gameover">
-                {`${message}\nYour time: ${this.props.time}\nPlay Again?`}
+            <div className={"gameover " + color}>
+                {message}
                 <div className={this.state.color_class} onClick={this.try_again}
                 onMouseEnter={this.go_green}
                 onMouseLeave={this.go_default}>

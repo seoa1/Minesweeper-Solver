@@ -13,6 +13,11 @@ body {
     box-sizing: border-box;
 }
 
+.cheater {
+    color: white;
+    font-size: 1.3vw;
+}
+
 .grid {
     display: grid;
     width: 75vw;
@@ -37,6 +42,23 @@ body {
     background-color: black;
 }
 
+.congrats {
+    background-color: rgba(100, 224, 100, 0.8);
+}
+
+.loser {
+    background-color: rgba(200, 100, 100, 0.8);;
+}
+
+.guarantee { background-color: purple;}
+.high { background-color: rgb(250, 121, 74);}
+.midhigh { background-color: orange;}
+.mid{ background-color: rgb(219, 186, 41);}
+.middishlow{ background-color: rgb(181, 206, 39);}
+.midlow{ background-color: rgb(130, 177, 38);}
+.low{ background-color: rgb(93, 145, 26);}
+.zero{ background-color: rgb(1, 95, 1);}
+
 .header {
     display: flex;
     height: 3vw;
@@ -57,7 +79,6 @@ body {
     left: 30vw;
     top: 25vh;
     position: fixed;
-    background-color: rgba(200, 100, 100, 0.8);
     width: 40vw;
     height: 30vh;
     z-index: 5;
@@ -76,6 +97,7 @@ body {
     height: 5vw;
     margin-top: 2vw;
     line-height: 5vw;
+    cursor: pointer;
 }
 
 .normal {
@@ -85,3 +107,13 @@ body {
 .hover {
     background-color: rgba(100,200,100,0.8);
 }
+
+.button {
+    font-size: 2vw;
+    text-align: center;
+    color: white;
+    background-color: rgb(180, 180, 166);
+    width: 8vw;
+    cursor: pointer;
+}
+
