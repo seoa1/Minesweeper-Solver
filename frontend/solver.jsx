@@ -1,9 +1,13 @@
 import React from 'react';
 
-const Solver = ({ solve }) => {
-
+const Solver = ({ solve, cheated }) => {
+    const handle_click = () => {
+        if(!cheated) {
+            solve();
+        }
+    }
     return (
-        <div className="button" onClick={solve}>
+        <div className="button" onClick={handle_click}>
             SOLVE!
         </div>
     )

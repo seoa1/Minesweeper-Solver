@@ -20,6 +20,7 @@ export default class Game extends React.Component {
         this.solve = this.solve.bind(this);
         this.take_step = this.take_step.bind(this);
         this.loss_odds = 0;
+        this.check = false;
     }
 
     start_timer() {
@@ -31,6 +32,7 @@ export default class Game extends React.Component {
     }
 
     restart_game() {
+        this.check = false;
         this.started = false;
         this.setState({ cheated: false, time: 0, board: new Board(), show_modal: false });
     }
@@ -76,7 +78,11 @@ export default class Game extends React.Component {
         }
         
         if(cont == 100) {
-            clearInterval(this.solve_interval);
+            if(this.check) { //check for clearing islands, one last step
+                clearInterval(this.solve_interval);
+
+            }
+            this.check = true;
         }
     }
 
@@ -119,8 +125,13 @@ export default class Game extends React.Component {
                     time={this.state.time} 
                     loss_odds={this.loss_odds}
                     cheated={this.state.cheated}/>
-                <Header time={this.state.time} num_flags={99 - this.state.board.num_flags()} solve={this.solve}/>
-                <ReactBoard bd={this.state.board} upd={this.update_game} cheated={this.state.cheated}/>  
+                <Header time={this.state.time} 
+                    num_flags={99 - this.state.board.num_flags()} 
+                    solve={this.solve} 
+                    cheated={this.state.cheated}/>
+                <ReactBoard bd={this.state.board} 
+                    upd={this.update_game} 
+                    cheated={this.state.cheated}/>  
             </div>
         )
     }

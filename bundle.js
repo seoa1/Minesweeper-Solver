@@ -770,6 +770,7 @@ var Game = /*#__PURE__*/function (_React$Component) {
     _this.solve = _this.solve.bind(_assertThisInitialized(_this));
     _this.take_step = _this.take_step.bind(_assertThisInitialized(_this));
     _this.loss_odds = 0;
+    _this.check = false;
     return _this;
   }
 
@@ -793,6 +794,7 @@ var Game = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "restart_game",
     value: function restart_game() {
+      this.check = false;
       this.started = false;
       this.setState({
         cheated: false,
@@ -850,7 +852,12 @@ var Game = /*#__PURE__*/function (_React$Component) {
       }
 
       if (cont == 100) {
-        clearInterval(this.solve_interval);
+        if (this.check) {
+          //check for clearing islands, one last step
+          clearInterval(this.solve_interval);
+        }
+
+        this.check = true;
       }
     }
   }, {
@@ -902,7 +909,8 @@ var Game = /*#__PURE__*/function (_React$Component) {
       }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_header__WEBPACK_IMPORTED_MODULE_3__["default"], {
         time: this.state.time,
         num_flags: 99 - this.state.board.num_flags(),
-        solve: this.solve
+        solve: this.solve,
+        cheated: this.state.cheated
       }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_react_board__WEBPACK_IMPORTED_MODULE_2__["default"], {
         bd: this.state.board,
         upd: this.update_game,
@@ -1059,7 +1067,8 @@ __webpack_require__.r(__webpack_exports__);
 var Header = function Header(_ref) {
   var time = _ref.time,
       num_flags = _ref.num_flags,
-      solve = _ref.solve;
+      solve = _ref.solve,
+      cheated = _ref.cheated;
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
     className: "header"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_flag_counter__WEBPACK_IMPORTED_MODULE_2__["default"], {
@@ -1067,7 +1076,8 @@ var Header = function Header(_ref) {
   }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_timer__WEBPACK_IMPORTED_MODULE_1__["default"], {
     time: time
   }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_solver__WEBPACK_IMPORTED_MODULE_3__["default"], {
-    solve: solve
+    solve: solve,
+    cheated: cheated
   }));
 };
 
@@ -1147,10 +1157,18 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Solver = function Solver(_ref) {
-  var solve = _ref.solve;
+  var solve = _ref.solve,
+      cheated = _ref.cheated;
+
+  var handle_click = function handle_click() {
+    if (!cheated) {
+      solve();
+    }
+  };
+
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
     className: "button",
-    onClick: solve
+    onClick: handle_click
   }, "SOLVE!");
 };
 
