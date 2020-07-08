@@ -422,7 +422,11 @@ var Board = /*#__PURE__*/function () {
         else {
             this.grid.flat(1).forEach(function (sq) {
               if (!sq.revealed && !sq.flagged) {
-                _this6.to_reveal.push(sq);
+                if (sq.bomb_prob > 50) {
+                  _this6.to_flag.push(sq);
+                } else {
+                  _this6.to_reveal.push(sq);
+                }
               }
             });
             return 100;

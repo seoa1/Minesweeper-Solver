@@ -290,7 +290,12 @@ export default class Board {
             else {
                 this.grid.flat(1).forEach( sq => {
                     if(!sq.revealed && !sq.flagged) {
-                        this.to_reveal.push(sq);
+                        if(sq.bomb_prob > 50) {
+                            this.to_flag.push(sq);
+                        }
+                        else {
+                            this.to_reveal.push(sq);
+                        }
                     }
                 })
                 return 100;
