@@ -297,7 +297,7 @@ var Board = /*#__PURE__*/function () {
     value: function set_standard_probs() {
       var _this3 = this;
 
-      this.standard_prob = Math.round(100 * (99 - this.flags) / this.num_unopened_squares);
+      this.standard_prob = Math.round(100 * (99 - this.flags) / (this.num_unopened_squares - this.flags));
       this.grid.flat(1).forEach(function (sq) {
         if (!sq.revealed && !sq.flagged) {
           sq.bomb_prob = _this3.standard_prob;

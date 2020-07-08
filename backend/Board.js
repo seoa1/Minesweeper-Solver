@@ -176,7 +176,7 @@ export default class Board {
     }
 
     set_standard_probs() {
-        this.standard_prob = Math.round(100 * (99 - this.flags) / this.num_unopened_squares)
+        this.standard_prob = Math.round(100 * (99 - this.flags) / (this.num_unopened_squares - this.flags))
         this.grid.flat(1).forEach( sq => {
             if(!sq.revealed && !sq.flagged) {
                 sq.bomb_prob = this.standard_prob;
