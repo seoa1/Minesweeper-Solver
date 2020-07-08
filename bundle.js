@@ -1303,7 +1303,7 @@ var Tile = /*#__PURE__*/function (_React$Component) {
           return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("img", {
             onContextMenu: this.flag,
             className: "bomb",
-            src: "./images/MS Bomb.jpg"
+            src: "./images/MS bomb.png"
           });
         } else {
           if (square.surr_bombs > 0 && !square.bomb) {
