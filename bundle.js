@@ -1301,9 +1301,8 @@ var Tile = /*#__PURE__*/function (_React$Component) {
       if (square.revealed) {
         if (square.bomb) {
           return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("img", {
-            onContextMenu: this.flag,
             className: "bomb",
-            src: "images/MS bomb.png"
+            src: "./images/bomb.png"
           });
         } else {
           if (square.surr_bombs > 0 && !square.bomb) {
@@ -1317,7 +1316,7 @@ var Tile = /*#__PURE__*/function (_React$Component) {
           return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("img", {
             onContextMenu: this.flag,
             className: "flag",
-            src: "./images/MS flag.png"
+            src: "./images/flag.png"
           });
         } else {
           if (this.props.cheated) {

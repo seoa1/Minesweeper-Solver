@@ -79,7 +79,7 @@ export default class Tile extends React.Component{
         if(square.revealed) {
             if(square.bomb) {
                 return(
-                    <img onContextMenu={this.flag} className="bomb" src="images/MS bomb.png"/>
+                    <img className="bomb" src="./images/bomb.png"/>
                 )
             }
             else{
@@ -92,7 +92,7 @@ export default class Tile extends React.Component{
         else{
             if(square.flagged) {
                 return(
-                    <img onContextMenu={this.flag} className="flag" src="./images/MS flag.png"/>
+                    <img onContextMenu={this.flag} className="flag" src="./images/flag.png"/>
                 )
             }
             else {
