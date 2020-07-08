@@ -722,6 +722,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _react_board__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./react_board */ "./frontend/react_board.jsx");
 /* harmony import */ var _header__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./header */ "./frontend/header.jsx");
 /* harmony import */ var _gameover__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./gameover */ "./frontend/gameover.jsx");
+/* harmony import */ var _tutorial__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./tutorial */ "./frontend/tutorial.jsx");
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -750,6 +751,7 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 
 
 
+
 var Game = /*#__PURE__*/function (_React$Component) {
   _inherits(Game, _React$Component);
 
@@ -766,19 +768,28 @@ var Game = /*#__PURE__*/function (_React$Component) {
       time: 0,
       board: new _backend_board__WEBPACK_IMPORTED_MODULE_1__["default"](),
       show_modal: false,
-      cheated: false
+      cheated: false,
+      show_tutorial: true
     };
     _this.update_game = _this.update_game.bind(_assertThisInitialized(_this));
     _this.restart_game = _this.restart_game.bind(_assertThisInitialized(_this));
     _this.show_game_over = _this.show_game_over.bind(_assertThisInitialized(_this));
     _this.solve = _this.solve.bind(_assertThisInitialized(_this));
     _this.take_step = _this.take_step.bind(_assertThisInitialized(_this));
+    _this.hide_tutorial = _this.hide_tutorial.bind(_assertThisInitialized(_this));
     _this.loss_odds = 0;
     _this.check = false;
     return _this;
   }
 
   _createClass(Game, [{
+    key: "hide_tutorial",
+    value: function hide_tutorial() {
+      this.setState({
+        show_tutorial: false
+      });
+    }
+  }, {
     key: "start_timer",
     value: function start_timer() {
       var _this2 = this;
@@ -904,7 +915,7 @@ var Game = /*#__PURE__*/function (_React$Component) {
     value: function render() {
       return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         className: "gameview"
-      }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_gameover__WEBPACK_IMPORTED_MODULE_4__["default"], {
+      }, this.state.show_modal ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_gameover__WEBPACK_IMPORTED_MODULE_4__["default"], {
         restart: this.restart_game,
         won: this.state.board.won,
         lost: this.state.board.lost,
@@ -912,7 +923,9 @@ var Game = /*#__PURE__*/function (_React$Component) {
         time: this.state.time,
         loss_odds: this.loss_odds,
         cheated: this.state.cheated
-      }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_header__WEBPACK_IMPORTED_MODULE_3__["default"], {
+      }) : null, this.state.show_tutorial ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_tutorial__WEBPACK_IMPORTED_MODULE_5__["default"], {
+        hide: this.hide_tutorial
+      }) : null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_header__WEBPACK_IMPORTED_MODULE_3__["default"], {
         time: this.state.time,
         num_flags: 99 - this.state.board.num_flags(),
         solve: this.solve,
@@ -994,10 +1007,6 @@ var GameOver = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
-      if (!this.props.show) {
-        return null;
-      }
-
       var message = "";
 
       if (this.props.won && !this.props.lost) {
@@ -1356,6 +1365,98 @@ var Timer = function Timer(_ref) {
 };
 
 /* harmony default export */ __webpack_exports__["default"] = (Timer);
+
+/***/ }),
+
+/***/ "./frontend/tutorial.jsx":
+/*!*******************************!*\
+  !*** ./frontend/tutorial.jsx ***!
+  \*******************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Tutorial; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+
+
+var Tutorial = /*#__PURE__*/function (_React$Component) {
+  _inherits(Tutorial, _React$Component);
+
+  var _super = _createSuper(Tutorial);
+
+  function Tutorial(props) {
+    var _this;
+
+    _classCallCheck(this, Tutorial);
+
+    _this = _super.call(this, props);
+    _this.state = {
+      page: 1
+    };
+    _this.next_page = _this.next_page.bind(_assertThisInitialized(_this));
+    return _this;
+  }
+
+  _createClass(Tutorial, [{
+    key: "next_page",
+    value: function next_page() {
+      this.setState({
+        page: this.state.page + 1
+      });
+    }
+  }, {
+    key: "first_page",
+    value: function first_page() {
+      return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, "Welcome to Minesweeper Solver!"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "You can either play Minesweeper like, normal, or have an AI solve it for you! To skip the tutorial, click the x button in the top right. To learn how to play Minesweeper, or to learn how the solver works, click the right arrow!"));
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: "cover"
+      }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: "tutorial"
+      }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("img", {
+        className: "close_tut",
+        onClick: this.props.hide,
+        src: "./images/x_button.png"
+      }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("img", {
+        className: "rightarr",
+        onClick: this.next_page,
+        src: "./images/right__arrow.png"
+      })));
+    }
+  }]);
+
+  return Tutorial;
+}(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
+
+
 
 /***/ }),
 

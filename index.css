@@ -7,6 +7,49 @@ body {
     font-family: "Roboto";
 }
 
+.tutorial {
+    width: 80vw;
+    height: 70vh;
+    background-color: beige;
+    white-space: pre;
+    left: 10vw;
+    top: 15vh;
+    position: fixed;
+    z-index: 5;
+    text-align: center;
+    font-size: 1.7vw;
+    word-spacing: 0.3vw;
+    align-content: center;
+    padding: 1vw;
+    border-radius: 1vw;
+    background-color: rgba(247, 247, 192, 0.8);
+}
+
+.cover {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    z-index: 3;
+}
+
+.close_tut {
+    width: 2vw;
+    height: 2vw;
+    position: fixed;
+    top: 17vh;
+    left: 89vw;
+    cursor: pointer;
+}
+
+.rightarr {
+    width: 3vw;
+    height: 5vw;
+    position: fixed;
+    left: 88vw;
+    top: 47vh;
+    cursor: pointer;
+}
+
 .tile {
     border: 1px solid white;
     width: 2.5vw;

@@ -12,9 +12,6 @@ export default class GameOver extends React.Component {
     }
 
     render() {
-        if(!this.props.show) {
-            return null;
-        }
         let message = "";
         if(this.props.won && !this.props.lost) {
             message = `YOU WON! Congratulations!\nYour time: ${this.props.time}\nPlay Again?`;

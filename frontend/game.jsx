@@ -3,6 +3,7 @@ import Board from '../backend/board';
 import ReactBoard from './react_board';
 import Header from './header';
 import GameOver from './gameover';
+import Tutorial from './tutorial';
 
 export default class Game extends React.Component {
     constructor() {
@@ -12,15 +13,21 @@ export default class Game extends React.Component {
             time: 0,
             board: new Board(),
             show_modal: false,
-            cheated: false
+            cheated: false,
+            show_tutorial: true
         }
         this.update_game = this.update_game.bind(this);
         this.restart_game = this.restart_game.bind(this);
         this.show_game_over = this.show_game_over.bind(this);
         this.solve = this.solve.bind(this);
         this.take_step = this.take_step.bind(this);
+        this.hide_tutorial = this.hide_tutorial.bind(this);
         this.loss_odds = 0;
         this.check = false;
+    }
+
+    hide_tutorial() {
+        this.setState({show_tutorial: false});
     }
 
     start_timer() {
@@ -118,13 +125,18 @@ export default class Game extends React.Component {
     render() {
         return (
             <div className="gameview">
-                <GameOver restart={this.restart_game} 
+                {this.state.show_modal ? 
+                    <GameOver restart={this.restart_game} 
                     won={this.state.board.won} 
                     lost={this.state.board.lost}
                     show={this.state.show_modal} 
                     time={this.state.time} 
                     loss_odds={this.loss_odds}
                     cheated={this.state.cheated}/>
+                : null}
+                {this.state.show_tutorial ? 
+                    <Tutorial hide={this.hide_tutorial}/> 
+                    : null}
                 <Header time={this.state.time} 
                     num_flags={99 - this.state.board.num_flags()} 
                     solve={this.solve} 
