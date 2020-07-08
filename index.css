@@ -3,6 +3,10 @@ body {
     
 }
 
+.gameview {
+    font-family: "Roboto";
+}
+
 .tile {
     border: 1px solid white;
     width: 2.5vw;
@@ -27,28 +31,26 @@ body {
 }
 
 .bomb {
-    background-color: red;
+    width: 2.5vw;
+    height: 2.5vw;
+}
+
+.flag {
+    width: 2.5vw;
+    height: 2.5vw;
 }
 
 .hidden {
-    background-color: greenyellow;
+    background-color: rgb(173, 255, 47);
 }
 
 .reveal {
-    background-color: lightblue;
-    font-weight: bold;
+    background-color: #add8e6;
+    font-weight: 900;
 }
 
 .flag {
     background-color: black;
-}
-
-.congrats {
-    background-color: rgba(100, 224, 100, 0.8);
-}
-
-.loser {
-    background-color: rgba(200, 100, 100, 0.8);;
 }
 
 .guarantee { background-color: purple;}
@@ -97,6 +99,8 @@ body {
     word-spacing: 0.3vw;
     align-content: center;
     padding: 1vw;
+    border-radius: 1vw;
+    background-color: rgba(247, 247, 192, 0.8);
 }
 
 .gameover div {
@@ -108,14 +112,17 @@ body {
     margin-top: 2vw;
     line-height: 5vw;
     cursor: pointer;
+    border-radius: .3vw;
 }
 
-.normal {
-    background-color: rgba(200, 200, 100, 0.8);
+.overbutton {
+    background-color: rgba(253, 253, 228, 0.452);
+    transition-duration: 0.3s;
+    border: 2px solid rgba(104, 104, 78, 0.623);
 }
 
-.hover {
-    background-color: rgba(100,200,100,0.8);
+.overbutton:hover {
+    background-color: white;
 }
 
 .button {
@@ -125,5 +132,10 @@ body {
     background-color: rgb(180, 180, 166);
     width: 8vw;
     cursor: pointer;
+    transition-duration: 0.3s;
+}
+
+.button:hover {
+    background-color: rgb(63, 63, 57);
 }
 

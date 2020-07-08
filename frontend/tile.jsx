@@ -78,7 +78,9 @@ export default class Tile extends React.Component{
         let square = this.props.sq;
         if(square.revealed) {
             if(square.bomb) {
-                status = "bomb";
+                return(
+                    <img onContextMenu={this.flag} className="bomb" src="./images/MS Bomb.jpg"/>
+                )
             }
             else{
                 if(square.surr_bombs > 0 && !square.bomb) {
@@ -89,7 +91,9 @@ export default class Tile extends React.Component{
         }
         else{
             if(square.flagged) {
-                status = "flag";
+                return(
+                    <img onContextMenu={this.flag} className="flag" src="./images/MS flag.png"/>
+                )
             }
             else {
                 if(this.props.cheated) {

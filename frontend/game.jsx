@@ -117,7 +117,7 @@ export default class Game extends React.Component {
 
     render() {
         return (
-            <div>
+            <div className="gameview">
                 <GameOver restart={this.restart_game} 
                     won={this.state.board.won} 
                     lost={this.state.board.lost}

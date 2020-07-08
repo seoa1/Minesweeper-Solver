@@ -902,7 +902,9 @@ var Game = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
-      return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_gameover__WEBPACK_IMPORTED_MODULE_4__["default"], {
+      return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: "gameview"
+      }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_gameover__WEBPACK_IMPORTED_MODULE_4__["default"], {
         restart: this.restart_game,
         won: this.state.board.won,
         lost: this.state.board.lost,
@@ -977,12 +979,7 @@ var GameOver = /*#__PURE__*/function (_React$Component) {
     _classCallCheck(this, GameOver);
 
     _this = _super.call(this, props);
-    _this.state = {
-      color_class: "normal"
-    };
     _this.try_again = _this.try_again.bind(_assertThisInitialized(_this));
-    _this.go_green = _this.go_green.bind(_assertThisInitialized(_this));
-    _this.go_default = _this.go_default.bind(_assertThisInitialized(_this));
     return _this;
   }
 
@@ -995,20 +992,6 @@ var GameOver = /*#__PURE__*/function (_React$Component) {
       this.props.restart();
     }
   }, {
-    key: "go_green",
-    value: function go_green() {
-      this.setState({
-        color_class: "hover"
-      });
-    }
-  }, {
-    key: "go_default",
-    value: function go_default() {
-      this.setState({
-        color_class: "normal"
-      });
-    }
-  }, {
     key: "render",
     value: function render() {
       if (!this.props.show) {
@@ -1016,28 +999,22 @@ var GameOver = /*#__PURE__*/function (_React$Component) {
       }
 
       var message = "";
-      var color;
 
       if (this.props.won && !this.props.lost) {
         message = "YOU WON! Congratulations!\nYour time: ".concat(this.props.time, "\nPlay Again?");
-        color = "congrats";
       } else {
         if (this.props.cheated) {
           message = "The solver hit a bomb! Unlucky!\nYour odds of losing on that square: ".concat(this.props.loss_odds, " %\nPlay Again?");
         } else {
           message = "You lost! Better luck next time!\nYour time: ".concat(this.props.time, "\nPlay Again?");
         }
-
-        color = "loser";
       }
 
       return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        className: "gameover " + color
+        className: "gameover"
       }, message, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        className: this.state.color_class,
-        onClick: this.try_again,
-        onMouseEnter: this.go_green,
-        onMouseLeave: this.go_default
+        className: "overbutton",
+        onClick: this.try_again
       }, "Yes!"));
     }
   }]);
@@ -1314,7 +1291,11 @@ var Tile = /*#__PURE__*/function (_React$Component) {
 
       if (square.revealed) {
         if (square.bomb) {
-          status = "bomb";
+          return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("img", {
+            onContextMenu: this.flag,
+            className: "bomb",
+            src: "./images/MS Bomb.jpg"
+          });
         } else {
           if (square.surr_bombs > 0 && !square.bomb) {
             text = square.surr_bombs.toString();
@@ -1324,7 +1305,11 @@ var Tile = /*#__PURE__*/function (_React$Component) {
         }
       } else {
         if (square.flagged) {
-          status = "flag";
+          return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("img", {
+            onContextMenu: this.flag,
+            className: "flag",
+            src: "./images/MS flag.png"
+          });
         } else {
           if (this.props.cheated) {
             text = this.props.sq.bomb_prob.toString();
