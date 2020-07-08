@@ -37,7 +37,7 @@ export default class Game extends React.Component {
 
     solve() {
         this.setState({ cheated: true });
-        const REVEAL_INTERVAL = 100;
+        const REVEAL_INTERVAL = 90;
         if(!this.started) {
             // regular execution
             let rand_pos = [Math.random() * 16 | 0, Math.random() * 30 | 0];
@@ -63,15 +63,18 @@ export default class Game extends React.Component {
     take_step() {
         this.state.board.set_standard_probs();
         let cont = this.state.board.check_edges();
+        this.loss_odds = cont;
+        this.setState({ board: this.state.board, time: 999 });
+        this.state.board.flag_all();
+        this.state.board.reveal_all();
         if(this.state.board.lost) {
             this.show_game_over();
-            this.loss_odds = cont;
             clearInterval(this.solve_interval);
         }
         else if(this.state.board.won) {
             this.show_game_over();
         }
-        this.setState({ board: this.state.board, time: 999 });
+        
         if(cont == 100) {
             clearInterval(this.solve_interval);
         }

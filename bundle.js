@@ -117,6 +117,8 @@ var Board = /*#__PURE__*/function () {
 
     this.flags = 0;
     this.standard_prob = 21;
+    this.to_reveal = [];
+    this.to_flag = [];
   }
 
   _createClass(Board, [{
@@ -165,7 +167,6 @@ var Board = /*#__PURE__*/function () {
     value: function two_one_pattern(sq_pos, dir) {
       var _this = this;
 
-      var to_reveal = [];
       var forward_2;
       var forward_2_down_1;
       var forward_2_up_1;
@@ -184,15 +185,15 @@ var Board = /*#__PURE__*/function () {
       if (this.is_valid_pos(forward_2) && (this.sq_at_pos(forward_2).revealed || this.sq_at_pos(forward_2).flagged)) {
         if (this.is_valid_pos(forward_2_up_1) && this.sq_at_pos(forward_2_up_1).revealed) {
           if (this.is_valid_pos(forward_2_down_1) && !this.sq_at_pos(forward_2_down_1).flagged) {
-            this.sq_at_pos(forward_2_down_1).flagged = true;
-            this.flags++;
+            this.to_flag.push(this.sq_at_pos(forward_2_down_1));
+            this.sq_at_pos(forward_2_down_1).bomb_prob = 100;
           }
         }
 
         if (this.is_valid_pos(forward_2_down_1) && this.sq_at_pos(forward_2_down_1).revealed) {
           if (this.is_valid_pos(forward_2_up_1) && !this.sq_at_pos(forward_2_up_1).flagged) {
-            this.sq_at_pos(forward_2_up_1).flagged = true;
-            this.flags++;
+            this.to_flag.push(this.sq_at_pos(forward_2_up_1));
+            this.sq_at_pos(forward_2_up_1).bomb_prob = 100;
           }
         }
 
@@ -209,13 +210,13 @@ var Board = /*#__PURE__*/function () {
 
           behind_pos.forEach(function (pos) {
             if (_this.is_valid_pos(pos) && !_this.sq_at_pos(pos).revealed && !_this.sq_at_pos(pos).flagged) {
-              to_reveal.push(_this.sq_at_pos(pos));
+              _this.to_reveal.push(_this.sq_at_pos(pos));
+
+              _this.sq_at_pos(pos).bomb_prob = 0;
             }
           });
         }
       }
-
-      return to_reveal;
     }
   }, {
     key: "one_one_pattern",
@@ -233,7 +234,6 @@ var Board = /*#__PURE__*/function () {
       var forward_1_up_1;
       var forward_1_down_1;
       var col = dir[0] === 0;
-      var to_reveal = [];
 
       if (col) {
         back_1_up_1 = [sq_pos[0] + 1, sq_pos[1] - dir[1]];
@@ -271,7 +271,8 @@ var Board = /*#__PURE__*/function () {
         });
 
         if (check && this.is_valid_pos(forward_2_up_1) && !this.sq_at_pos(forward_2_up_1).flagged && !this.sq_at_pos(forward_2_up_1).revealed) {
-          to_reveal.push(this.sq_at_pos(forward_2_up_1));
+          this.to_reveal.push(this.sq_at_pos(forward_2_up_1));
+          this.sq_at_pos(forward_2_up_1).bomb_prob = 0;
         }
       } // check down direction
 
@@ -286,38 +287,59 @@ var Board = /*#__PURE__*/function () {
         });
 
         if (_check && this.is_valid_pos(forward_2_down_1) && !this.sq_at_pos(forward_2_down_1).flagged && !this.sq_at_pos(forward_2_down_1).revealed) {
-          to_reveal.push(this.sq_at_pos(forward_2_down_1));
+          this.to_reveal.push(this.sq_at_pos(forward_2_down_1));
+          this.sq_at_pos(forward_2_down_1).bomb_prob = 0;
         }
       }
+    }
+  }, {
+    key: "reveal_all",
+    value: function reveal_all() {
+      var _this3 = this;
 
-      return to_reveal;
+      this.to_reveal.forEach(function (sq) {
+        _this3.reveal_squares(sq.pos);
+      });
+      this.to_reveal = [];
+    }
+  }, {
+    key: "flag_all",
+    value: function flag_all() {
+      var _this4 = this;
+
+      this.to_flag.forEach(function (sq) {
+        if (!sq.flagged) {
+          sq.flagged = true;
+          _this4.flags++;
+        }
+      });
+      this.to_flag = [];
     }
   }, {
     key: "set_standard_probs",
     value: function set_standard_probs() {
-      var _this3 = this;
+      var _this5 = this;
 
       this.standard_prob = Math.round(100 * (99 - this.flags) / (this.num_unopened_squares - this.flags));
       this.grid.flat(1).forEach(function (sq) {
         if (!sq.revealed && !sq.flagged) {
-          sq.bomb_prob = _this3.standard_prob;
+          sq.bomb_prob = _this5.standard_prob;
         }
       });
     }
   }, {
     key: "check_edges",
     value: function check_edges() {
-      var _this4 = this;
+      var _this6 = this;
 
       var to_delete = [];
-      var to_reveal = [];
       var lowest_sq;
       var lowest_prob = 100;
       this.edge_squares.forEach(function (edge_square, key) {
         var unrev_squares = [];
         var num_surr_flags = 0;
 
-        _this4.surr_squares(edge_square.pos).forEach(function (surr_square) {
+        _this6.surr_squares(edge_square.pos).forEach(function (surr_square) {
           if (!surr_square.revealed && !surr_square.flagged) {
             unrev_squares.push(surr_square);
           }
@@ -333,7 +355,7 @@ var Board = /*#__PURE__*/function () {
           //set bomb probabilities
           var bomb_prob = Math.round(100 * (edge_square.surr_bombs - num_surr_flags) / unrev_squares.length);
           unrev_squares.forEach(function (sq) {
-            if (bomb_prob > sq.bomb_prob || sq.bomb_prob == _this4.standard_prob) {
+            if (sq.bomb_prob != 0 && (bomb_prob > sq.bomb_prob || sq.bomb_prob == _this6.standard_prob)) {
               sq.bomb_prob = bomb_prob;
             }
 
@@ -347,7 +369,9 @@ var Board = /*#__PURE__*/function () {
 
         if (num_surr_flags == edge_square.surr_bombs) {
           unrev_squares.forEach(function (unrev) {
-            to_reveal.push(unrev);
+            _this6.to_reveal.push(unrev);
+
+            unrev.bomb_prob = 0;
           });
           to_delete.push(key);
         } // check if any obvious bomb flags
@@ -355,8 +379,9 @@ var Board = /*#__PURE__*/function () {
 
         if (unrev_squares.length == edge_square.surr_bombs - num_surr_flags) {
           unrev_squares.forEach(function (unrev) {
-            unrev.flagged = true;
-            _this4.flags++;
+            _this6.to_flag.push(unrev);
+
+            unrev.bomb_prob = 100;
           });
           to_delete.push(key);
         } // check for 2/1 and 1/1 pattern
@@ -369,55 +394,50 @@ var Board = /*#__PURE__*/function () {
           DIRS.forEach(function (dir) {
             var new_pos = [sq_pos[0] + dir[0], sq_pos[1] + dir[1]];
 
-            if (_this4.is_valid_pos(new_pos) && _this4.sq_at_pos(new_pos).revealed) {
+            if (_this6.is_valid_pos(new_pos) && _this6.sq_at_pos(new_pos).revealed) {
               var new_num_surr_flags = 0;
 
-              _this4.surr_squares(new_pos).forEach(function (sq) {
+              _this6.surr_squares(new_pos).forEach(function (sq) {
                 if (sq.flagged) {
                   new_num_surr_flags++;
                 }
               }); // 2/1 pattern
 
 
-              if (_this4.sq_at_pos(new_pos).surr_bombs - new_num_surr_flags == 2) {
-                to_reveal = to_reveal.concat(_this4.two_one_pattern(sq_pos, dir));
+              if (_this6.sq_at_pos(new_pos).surr_bombs - new_num_surr_flags == 2) {
+                _this6.two_one_pattern(sq_pos, dir);
               } //1/1 pattern
-              else if (_this4.sq_at_pos(new_pos).surr_bombs - new_num_surr_flags == 1) {
-                  to_reveal = to_reveal.concat(_this4.one_one_pattern(sq_pos, dir));
+              else if (_this6.sq_at_pos(new_pos).surr_bombs - new_num_surr_flags == 1) {
+                  _this6.one_one_pattern(sq_pos, dir);
                 }
             }
           });
         }
       });
 
-      if (to_reveal.length == 0 && to_delete.length == 0) {
+      if (this.to_reveal.length == 0 && to_delete.length == 0) {
         if (lowest_sq != null) {
-          to_reveal.push(lowest_sq);
+          this.to_reveal.push(lowest_sq);
         } // any stray islands
         else {
             this.grid.flat(1).forEach(function (sq) {
               if (!sq.revealed && !sq.flagged) {
-                to_reveal.push(sq);
+                _this6.to_reveal.push(sq);
               }
             });
             return 100;
           }
       }
 
-      to_reveal.forEach(function (rev_sq) {
-        if (!rev_sq.flagged) {
-          _this4.reveal_squares(rev_sq.pos);
-        }
-      });
       to_delete.forEach(function (key) {
-        return _this4.edge_squares["delete"](key);
+        return _this6.edge_squares["delete"](key);
       });
       return lowest_prob;
     }
   }, {
     key: "reveal_squares",
     value: function reveal_squares(pos) {
-      var _this5 = this;
+      var _this7 = this;
 
       var curr_square = this.grid[pos[0]][pos[1]];
 
@@ -441,12 +461,12 @@ var Board = /*#__PURE__*/function () {
 
       this.surr_squares(pos).forEach(function (square) {
         if (!curr_square.revealed) {
-          _this5.num_unopened_squares--;
+          _this7.num_unopened_squares--;
         }
 
         curr_square.revealed = true;
 
-        _this5.reveal_squares(square.pos);
+        _this7.reveal_squares(square.pos);
       });
     }
   }, {
@@ -464,23 +484,23 @@ var Board = /*#__PURE__*/function () {
   }, {
     key: "set_bombs",
     value: function set_bombs(pos) {
-      var _this6 = this;
+      var _this8 = this;
 
       var _loop = function _loop(_i) {
         var row = Math.random() * 16 | 0;
         var col = Math.random() * 30 | 0;
         var surr = false;
 
-        _this6.surr_squares_pos_only(pos).forEach(function (surr_pos) {
+        _this8.surr_squares_pos_only(pos).forEach(function (surr_pos) {
           if (row == surr_pos[0] && col == surr_pos[1]) {
             surr = true;
           }
         });
 
-        if (_this6.grid[row][col].bomb || row == pos[0] && col == pos[1] || surr) {
+        if (_this8.grid[row][col].bomb || row == pos[0] && col == pos[1] || surr) {
           _i--;
         } else {
-          _this6.grid[row][col].bomb = true;
+          _this8.grid[row][col].bomb = true;
         }
 
         i = _i;
@@ -495,7 +515,7 @@ var Board = /*#__PURE__*/function () {
   }, {
     key: "find_surr_bomb_vals",
     value: function find_surr_bomb_vals() {
-      var _this7 = this;
+      var _this9 = this;
 
       var DIRS_8 = [[0, 1], [1, 1], [1, 0], [0, -1], [-1, 1], [1, -1], [-1, 0], [-1, -1]];
 
@@ -503,13 +523,13 @@ var Board = /*#__PURE__*/function () {
         var _loop2 = function _loop2(j) {
           var num_surr_bombs = 0;
 
-          _this7.surr_squares([_i2, j]).forEach(function (square) {
+          _this9.surr_squares([_i2, j]).forEach(function (square) {
             if (square.bomb) {
               num_surr_bombs++;
             }
           });
 
-          _this7.grid[_i2][j].surr_bombs = num_surr_bombs;
+          _this9.grid[_i2][j].surr_bombs = num_surr_bombs;
         };
 
         for (var j = 0; j < 30; j++) {
@@ -521,7 +541,7 @@ var Board = /*#__PURE__*/function () {
   }, {
     key: "surr_squares",
     value: function surr_squares(pos) {
-      var _this8 = this;
+      var _this10 = this;
 
       var DIRS = [[0, 1], [1, 1], [1, 0], [0, -1], [-1, 1], [1, -1], [-1, 0], [-1, -1]];
       var squares = [];
@@ -530,7 +550,7 @@ var Board = /*#__PURE__*/function () {
         var new_col = pos[1] + dir[1];
 
         if (new_row >= 0 && new_row < 16 && new_col >= 0 && new_col < 30) {
-          squares.push(_this8.grid[new_row][new_col]);
+          squares.push(_this10.grid[new_row][new_col]);
         }
       });
       return squares;
@@ -787,7 +807,7 @@ var Game = /*#__PURE__*/function (_React$Component) {
       this.setState({
         cheated: true
       });
-      var REVEAL_INTERVAL = 100;
+      var REVEAL_INTERVAL = 90;
 
       if (!this.started) {
         // regular execution
@@ -814,19 +834,20 @@ var Game = /*#__PURE__*/function (_React$Component) {
     value: function take_step() {
       this.state.board.set_standard_probs();
       var cont = this.state.board.check_edges();
-
-      if (this.state.board.lost) {
-        this.show_game_over();
-        this.loss_odds = cont;
-        clearInterval(this.solve_interval);
-      } else if (this.state.board.won) {
-        this.show_game_over();
-      }
-
+      this.loss_odds = cont;
       this.setState({
         board: this.state.board,
         time: 999
       });
+      this.state.board.flag_all();
+      this.state.board.reveal_all();
+
+      if (this.state.board.lost) {
+        this.show_game_over();
+        clearInterval(this.solve_interval);
+      } else if (this.state.board.won) {
+        this.show_game_over();
+      }
 
       if (cont == 100) {
         clearInterval(this.solve_interval);
@@ -1232,6 +1253,37 @@ var Tile = /*#__PURE__*/function (_React$Component) {
       return "zero";
     }
   }, {
+    key: "text_color",
+    value: function text_color() {
+      var sq_bomb_surr = this.props.sq.surr_bombs;
+
+      switch (sq_bomb_surr) {
+        case 1:
+          return "one";
+
+        case 2:
+          return "two";
+
+        case 3:
+          return "three";
+
+        case 4:
+          return "four";
+
+        case 5:
+          return "five";
+
+        case 6:
+          return "six";
+
+        case 7:
+          return "seven";
+
+        case 8:
+          return "eight";
+      }
+    }
+  }, {
     key: "render",
     value: function render() {
       var status;
@@ -1246,7 +1298,7 @@ var Tile = /*#__PURE__*/function (_React$Component) {
             text = square.surr_bombs.toString();
           }
 
-          status = "reveal";
+          status = "reveal " + this.text_color();
         }
       } else {
         if (square.flagged) {

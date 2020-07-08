@@ -9,6 +9,8 @@ export default class Board {
         this.edge_squares = new Map(); // keys are ids, values are Squares
         this.flags = 0;
         this.standard_prob = 21;
+        this.to_reveal = [];
+        this.to_flag = [];
     }
 
     num_flags() {
@@ -45,7 +47,6 @@ export default class Board {
     }
 
     two_one_pattern(sq_pos, dir) {
-        let to_reveal = [];
         let forward_2;
         let forward_2_down_1;
         let forward_2_up_1;
@@ -63,14 +64,15 @@ export default class Board {
         if(this.is_valid_pos(forward_2) && (this.sq_at_pos(forward_2).revealed || this.sq_at_pos(forward_2).flagged)) {
             if(this.is_valid_pos(forward_2_up_1) && (this.sq_at_pos(forward_2_up_1).revealed)) {
                 if(this.is_valid_pos(forward_2_down_1) && !this.sq_at_pos(forward_2_down_1).flagged) {
-                    this.sq_at_pos(forward_2_down_1).flagged = true;
-                    this.flags++;
+                    this.to_flag.push(this.sq_at_pos(forward_2_down_1));
+                    this.sq_at_pos(forward_2_down_1).bomb_prob = 100;
                 }
             }
             if(this.is_valid_pos(forward_2_down_1) && (this.sq_at_pos(forward_2_down_1).revealed)) {
                 if(this.is_valid_pos(forward_2_up_1) && !this.sq_at_pos(forward_2_up_1).flagged) {
-                    this.sq_at_pos(forward_2_up_1).flagged = true;
-                    this.flags++;
+                    this.to_flag.push(this.sq_at_pos(forward_2_up_1));
+                    this.sq_at_pos(forward_2_up_1).bomb_prob = 100;
+
                 }
             }
             let check = (!this.is_valid_pos(forward_2_up_1) || this.sq_at_pos(forward_2_up_1).revealed || this.sq_at_pos(forward_2_up_1).flagged) 
@@ -93,12 +95,12 @@ export default class Board {
                 }
                 behind_pos.forEach(pos => {
                     if(this.is_valid_pos(pos) && !this.sq_at_pos(pos).revealed && !this.sq_at_pos(pos).flagged) {
-                        to_reveal.push(this.sq_at_pos(pos));
+                        this.to_reveal.push(this.sq_at_pos(pos));
+                        this.sq_at_pos(pos).bomb_prob = 0;
                     }
                 })
             }
         }
-        return to_reveal;
     }
 
     one_one_pattern(sq_pos, dir) {
@@ -113,7 +115,6 @@ export default class Board {
         let forward_1_up_1;
         let forward_1_down_1;
         let col = (dir[0] === 0);
-        let to_reveal = [];
 
         if(col) {
             back_1_up_1 = [sq_pos[0] + 1, sq_pos[1] - dir[1]];
@@ -153,8 +154,8 @@ export default class Board {
                 }
             })
             if(check && this.is_valid_pos(forward_2_up_1) && !this.sq_at_pos(forward_2_up_1).flagged && !this.sq_at_pos(forward_2_up_1).revealed) {
-                to_reveal.push(this.sq_at_pos(forward_2_up_1));
-                
+                this.to_reveal.push(this.sq_at_pos(forward_2_up_1));
+                this.sq_at_pos(forward_2_up_1).bomb_prob = 0;
             }
             
         }
@@ -168,11 +169,29 @@ export default class Board {
                 }
             })
             if(check && this.is_valid_pos(forward_2_down_1) && !this.sq_at_pos(forward_2_down_1).flagged && !this.sq_at_pos(forward_2_down_1).revealed) {
-                to_reveal.push(this.sq_at_pos(forward_2_down_1));
+                this.to_reveal.push(this.sq_at_pos(forward_2_down_1));
+                this.sq_at_pos(forward_2_down_1).bomb_prob = 0;
                 
             }
         }
-        return to_reveal;
+    }
+
+    reveal_all() {
+        this.to_reveal.forEach( sq => {
+            this.reveal_squares(sq.pos);
+        })
+        this.to_reveal = [];
+    }
+
+    flag_all() {
+        this.to_flag.forEach( sq => {
+            if(!sq.flagged) {
+                sq.flagged = true;
+                this.flags++;
+            }
+            
+        })
+        this.to_flag = [];
     }
 
     set_standard_probs() {
@@ -186,7 +205,6 @@ export default class Board {
 
     check_edges() {
         let to_delete = [];
-        let to_reveal = [];
         let lowest_sq;
         let lowest_prob = 100;
         this.edge_squares.forEach( (edge_square, key) => {
@@ -208,7 +226,7 @@ export default class Board {
                 //set bomb probabilities
                 let bomb_prob = Math.round(100 * (edge_square.surr_bombs - num_surr_flags) / unrev_squares.length);
                 unrev_squares.forEach( sq => {
-                    if(bomb_prob > sq.bomb_prob || sq.bomb_prob == this.standard_prob) {
+                    if(sq.bomb_prob != 0 && (bomb_prob > sq.bomb_prob || sq.bomb_prob == this.standard_prob)) {
                         sq.bomb_prob = bomb_prob;
                     }
                     if(sq.bomb_prob < lowest_prob) {
@@ -221,15 +239,16 @@ export default class Board {
             // check if any obvious square clears
             if(num_surr_flags == edge_square.surr_bombs) {
                 unrev_squares.forEach( unrev => {
-                    to_reveal.push(unrev);
+                    this.to_reveal.push(unrev);
+                    unrev.bomb_prob = 0;
                 })
                 to_delete.push(key);
             }
             // check if any obvious bomb flags
             if(unrev_squares.length == edge_square.surr_bombs - num_surr_flags) {
                 unrev_squares.forEach( unrev => {
-                    unrev.flagged = true;
-                    this.flags++;
+                    this.to_flag.push(unrev);
+                    unrev.bomb_prob = 100;
                 })
                 to_delete.push(key);
             }
@@ -250,39 +269,34 @@ export default class Board {
                         })
                         // 2/1 pattern
                         if(this.sq_at_pos(new_pos).surr_bombs - new_num_surr_flags == 2) {
-                            to_reveal = to_reveal.concat(this.two_one_pattern(sq_pos, dir));
+                            this.two_one_pattern(sq_pos, dir);
 
                         }
                         
                         //1/1 pattern
                         else if(this.sq_at_pos(new_pos).surr_bombs - new_num_surr_flags == 1) {
-                            to_reveal = to_reveal.concat(this.one_one_pattern(sq_pos, dir));
+                            this.one_one_pattern(sq_pos, dir);
                         }
                     }
                 });
                 
             }
         })
-        if(to_reveal.length == 0 && to_delete.length == 0 ) {
+        if(this.to_reveal.length == 0 && to_delete.length == 0 ) {
             if(lowest_sq != null) {
-                to_reveal.push(lowest_sq);
+                this.to_reveal.push(lowest_sq);
             }
             // any stray islands
             else {
                 this.grid.flat(1).forEach( sq => {
                     if(!sq.revealed && !sq.flagged) {
-                        to_reveal.push(sq);
+                        this.to_reveal.push(sq);
                     }
                 })
                 return 100;
             }
 
         }
-        to_reveal.forEach( rev_sq => {
-            if(!rev_sq.flagged) {
-                this.reveal_squares(rev_sq.pos) 
-            }
-        });
         to_delete.forEach( key => this.edge_squares.delete(key) );
         return lowest_prob;
     }

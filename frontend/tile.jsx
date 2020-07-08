@@ -50,6 +50,28 @@ export default class Tile extends React.Component{
         return "zero";
     }
 
+    text_color() {
+        let sq_bomb_surr = this.props.sq.surr_bombs;
+        switch(sq_bomb_surr) {
+            case 1:
+                return "one";
+            case 2:
+                return "two";
+            case 3:
+                return "three";
+            case 4:
+                return "four";
+            case 5:
+                return "five";
+            case 6:
+                return "six";
+            case 7:
+                return "seven";
+            case 8:
+                return "eight";
+        }
+    }
+
     render() {
         let status;
         let text = "";
@@ -62,7 +84,7 @@ export default class Tile extends React.Component{
                 if(square.surr_bombs > 0 && !square.bomb) {
                     text = square.surr_bombs.toString();
                 }
-                status = "reveal";
+                status = "reveal " + this.text_color();
             }
         }
         else{
