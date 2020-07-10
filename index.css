@@ -11,7 +11,7 @@ body {
     width: 80vw;
     height: 70vh;
     background-color: beige;
-    white-space: pre;
+    white-space: pre-line;
     left: 10vw;
     top: 15vh;
     position: fixed;
@@ -23,6 +23,12 @@ body {
     padding: 1vw;
     border-radius: 1vw;
     background-color: rgba(247, 247, 192, 0.8);
+    overflow-wrap: normal;
+}
+
+.tutorial div p {
+    padding: 0 4vw;
+    text-align: left;
 }
 
 .cover {
@@ -46,6 +52,15 @@ body {
     height: 5vw;
     position: fixed;
     left: 88vw;
+    top: 47vh;
+    cursor: pointer;
+}
+
+.leftarr {
+    width: 3vw;
+    height: 5vw;
+    position: fixed;
+    left: 11vw;
     top: 47vh;
     cursor: pointer;
 }
@@ -182,3 +197,24 @@ body {
     background-color: rgb(63, 63, 57);
 }
 
+.solverpng {
+    float: right;
+    height: 12vw;
+    width: 12vw;
+    margin: 1vw;
+}
+
+.boardpng {
+    float: left;
+    height: 12vw;
+    width: 12vw;
+    margin: 1vw;
+}
+
+.coverpic {
+    width: 17vw;
+    height: 12vw;
+    position: fixed;
+    top: 52vh;
+    left: 55vw;
+}

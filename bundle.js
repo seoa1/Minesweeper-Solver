@@ -1415,23 +1415,114 @@ var Tutorial = /*#__PURE__*/function (_React$Component) {
 
     _this = _super.call(this, props);
     _this.state = {
-      page: 1
+      page: 1,
+      right: true,
+      left: false
     };
     _this.next_page = _this.next_page.bind(_assertThisInitialized(_this));
+    _this.get_page = _this.get_page.bind(_assertThisInitialized(_this));
+    _this.first_page = _this.first_page.bind(_assertThisInitialized(_this));
+    _this.prev_page = _this.prev_page.bind(_assertThisInitialized(_this));
+    _this.second_page = _this.second_page.bind(_assertThisInitialized(_this));
+    _this.third_page = _this.third_page.bind(_assertThisInitialized(_this));
     return _this;
   }
 
   _createClass(Tutorial, [{
     key: "next_page",
     value: function next_page() {
+      this.state.page++;
+
+      if (this.state.page < 3) {
+        this.state.right = true;
+      } else {
+        this.state.right = false;
+      }
+
+      if (this.state.page > 1) {
+        this.state.left = true;
+      } else {
+        this.state.left = false;
+      }
+
       this.setState({
-        page: this.state.page + 1
+        page: this.state.page,
+        left: this.state.left
+      });
+    }
+  }, {
+    key: "prev_page",
+    value: function prev_page() {
+      this.state.page--;
+
+      if (this.state.page < 3) {
+        this.state.right = true;
+      } else {
+        this.state.right = false;
+      }
+
+      if (this.state.page > 1) {
+        this.state.left = true;
+      } else {
+        this.state.left = false;
+      }
+
+      this.setState({
+        page: this.state.page,
+        left: this.state.left
       });
     }
   }, {
     key: "first_page",
     value: function first_page() {
-      return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, "Welcome to Minesweeper Solver!"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "You can either play Minesweeper like, normal, or have an AI solve it for you! To skip the tutorial, click the x button in the top right. To learn how to play Minesweeper, or to learn how the solver works, click the right arrow!"));
+      return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: "page1"
+      }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, "Welcome to Minesweeper Solver!"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "This is a quick tutorial for those who haven't played Minesweeper before, or for those who want to know more about how the solver works! If you're neither of these, go ahead and click the x at the top right of the screen. Otherwise, click the arrow on the right!", /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), "Contents:", /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), "Page 2: How to Play", /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), "Page 3: How the solver works", /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("img", {
+        src: "./images/cover_page.png",
+        className: "coverpic"
+      }));
+    }
+  }, {
+    key: "second_page",
+    value: function second_page() {
+      return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, "How to Play"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "Minesweeper is actually quite a simple game to understand. The board is a 16 x 30 grid of tiles. In total, there are 99 bombs scattered randomly within this grid. The goal of the game is to reveal all of the squares that don't have a bomb hidden underneath, without revealing any of the bombs. If you accidentally reveal a bomb, you lose!", /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("img", {
+        className: "boardpng",
+        src: "./images/board_screenshot.png"
+      }), "There are two controls: left-click and right-click. Left clicking reveals a square. That square will either be blank, or will have a number on it. If the square is blank, that means that there are no bombs in the eight squares surrounding that square! If this happens, all eight of the surrounding squares will also be revealed. As you might imagine, this effect can chain, revealing a large chunk of squares! If the square has a number, that indicates how many bombs are in the eight surrounding squares. Use this as a hint to deduce where the bombs are! Right-clicking will flag a square. This is used to indicate to yourself that you think that a bomb is underneath that square. If you want to remove the flag later, just right-click it again. You cannot left-click a square that is flagged."));
+    }
+  }, {
+    key: "third_page",
+    value: function third_page() {
+      return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, "How the Solver works"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("img", {
+        className: "solverpng",
+        src: "./images/solver_screenshot.png"
+      }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "The solver uses an algorithm that keeps track of all of the edge squares on the board (the revealed squares that have unrevealed adjacent squares). From these edge squares, the algorithm first checks for trivial flags or reveals, where the number of unrevealed squares is equal to the number of surrounding bombs unaccounted for, or all of a square's surrounding squares have been flagged, meaning that any other unrevealed squares will not have a bomb. Then, the solver detects numerical patterns in the square values that can be used to guarantee a square having a bomb or not having a bomb, even without incomplete information. Once the solver is unable to find any trivial solutions or detect any patterns, it calculates the probability of each of the remaining unrevealed squares of containing a bomb, and selects the square that gives the solver the highest probability of success."));
+    }
+  }, {
+    key: "get_page",
+    value: function get_page() {
+      switch (this.state.page) {
+        case 1:
+          return this.first_page();
+
+        case 2:
+          return this.second_page();
+
+        case 3:
+          return this.third_page();
+
+        case 4:
+          return this.fourth_page();
+
+        case 5:
+          return this.fifth_page();
+
+        case 6:
+          return this.sixth_page();
+
+        default:
+          break;
+      }
     }
   }, {
     key: "render",
@@ -1440,15 +1531,19 @@ var Tutorial = /*#__PURE__*/function (_React$Component) {
         className: "cover"
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         className: "tutorial"
-      }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("img", {
+      }, this.get_page(), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("img", {
         className: "close_tut",
         onClick: this.props.hide,
         src: "./images/x_button.png"
-      }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("img", {
+      }), this.state.right ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("img", {
         className: "rightarr",
         onClick: this.next_page,
         src: "./images/right__arrow.png"
-      })));
+      }) : null, this.state.left ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("img", {
+        className: "leftarr",
+        onClick: this.prev_page,
+        src: "./images/left_arrow.png"
+      }) : null));
     }
   }]);
 
