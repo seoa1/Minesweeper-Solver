@@ -1,11 +1,12 @@
 {
   "name": "minesweeper_solver",
+  "mode": "production",
   "version": "1.0.0",
   "description": "",
   "main": "index.jsx",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "webpack": "webpack --mode=development --watch"
+    "webpack": "webpack --mode=production --watch"
   },
   "keywords": [],
   "author": "",
